@@ -1,0 +1,9 @@
+{
+    "ignore": [
+        "dist"
+    ],
+    "ext": "js,pug,hbs,ts",
+    "watch": [
+        "src"
+    ]
+}
