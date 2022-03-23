@@ -21,11 +21,11 @@ export default function registerRoutes(server: FastifyInstance<Server, IncomingM
       const { username, password } = req.query;
       const customerHeader = req.headers["h-custom"];
 
-      console.dir({
+      req.log.debug({
         username,
         password,
         customerHeader
-      });
+      }, 'Auth handler executed');
 
       return 'logged in!\n';
     }
