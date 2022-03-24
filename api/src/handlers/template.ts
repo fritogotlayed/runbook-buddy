@@ -2,24 +2,27 @@ import { FastifyInstance, FastifyLoggerInstance, FastifyPluginOptions } from "fa
 import { IncomingMessage, Server, ServerResponse } from "http";
 import { readdir } from "fs";
 import { promisify } from "util";
+import { Type, Static } from "@sinclair/typebox";
 import { readFileContents, removeFile, writeFileContents } from "../utils";
 
 interface IGetTemplateByIdRequestUrl {
   id: string;
 }
 
-interface ICreateTemplateRequestBody {
-  name: string;
-  content: string;
-}
+const CreateTemplateRequestBodySchema = Type.Object({
+  name: Type.String(),
+  content: Type.String(),
+});
+type CreateTemplateRequestBody = Static<typeof CreateTemplateRequestBodySchema>;
 
 interface IPutTemplateRequestUrl {
   id: string;
 }
 
-interface IPutTemplateRequestBody {
-  content: string;
-}
+const PutTemplateRequestBodySchema = Type.Object({
+  content: Type.String(),
+});
+type PutTemplateRequestBody = Static<typeof PutTemplateRequestBodySchema>;
 
 interface IDeleteTemplateRequestUrl {
   id: string;
@@ -66,16 +69,23 @@ export default function registerRoutes(server: FastifyInstance<Server, IncomingM
         return data;
       } catch (err) {
         console.dir(err);
-        return { status: 404, message: 'Not Found' };
+        throw { status: 404, message: 'Not Found' };
       }
     }
   )
 
   server.post<{
-    Body: ICreateTemplateRequestBody
+    Body: CreateTemplateRequestBody
   }>(
     '/',
-    {},
+    {
+      schema: {
+        body: CreateTemplateRequestBodySchema,
+        response: {
+          200: CreateTemplateRequestBodySchema
+        }
+      }
+    },
     async (req, resp) => {
       const { name, content } = req.body;
       try {
@@ -84,17 +94,24 @@ export default function registerRoutes(server: FastifyInstance<Server, IncomingM
         return { name, content };
       } catch (err) {
         console.dir(err);
-        return { status: 500, message: 'Something went wrong!' };
+        throw { status: 500, message: 'Something went wrong!' };
       }
     }
   )
 
   server.put<{
-    Body: IPutTemplateRequestBody
+    Body: PutTemplateRequestBody
     Params: IPutTemplateRequestUrl
   }>(
     '/:id',
-    {},
+    {
+      schema: {
+        body: PutTemplateRequestBodySchema,
+        response: {
+          200: CreateTemplateRequestBodySchema
+        }
+      }
+    },
     async (req, resp) => {
       const { id } = req.params;
       const { content } = req.body;
@@ -104,7 +121,7 @@ export default function registerRoutes(server: FastifyInstance<Server, IncomingM
         return { name: id, content };
       } catch (err) {
         console.dir(err);
-        return { status: 500, message: 'Something went wrong!' };
+        throw { status: 500, message: 'Something went wrong!' };
       }
     }
   )
@@ -123,7 +140,7 @@ export default function registerRoutes(server: FastifyInstance<Server, IncomingM
         return;
       } catch (err) {
         console.dir(err);
-        return { status: 500, message: 'Something went wrong!' };
+        throw { status: 500, message: 'Something went wrong!' };
       }
     }
   )

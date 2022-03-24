@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyLoggerInstance, FastifyPluginOptions } from "fa
 import { IncomingMessage, Server, ServerResponse } from "http";
 import { readdir } from "fs";
 import { promisify } from "util";
+import { Static, Type } from "@sinclair/typebox";
 import { readFileContents, removeFile, writeFileContents } from "../utils";
 
 interface IInstanceLineItem {
@@ -13,24 +14,39 @@ interface IGetInstanceByIdRequestUrl {
   id: string;
 }
 
-interface ICreateInstanceRequestBody {
-  name: string;
-  content: Array<IInstanceLineItem>;
-}
+const CreateInstanceRequestBodySchema = Type.Object({
+  name: Type.String(),
+  content: Type.Array(Type.Object({
+    completed: Type.Boolean(),
+    data: Type.String(),
+  })),
+});
+type CreateInstanceRequestBody = Static<typeof CreateInstanceRequestBodySchema>;
 
 interface IPutInstanceRequestUrl {
   id: string;
 }
 
-interface IPutInstanceRequestBody {
-  content: Array<IInstanceLineItem>;
-}
+const PutInstanceRequestBodySchema = Type.Object({
+  content: Type.Array(Type.Object({
+    completed: Type.Boolean(),
+    data: Type.String(),
+  })),
+});
+type PutInstanceRequestBody = Static<typeof PutInstanceRequestBodySchema>;
 
 interface IDeleteInstanceRequestUrl {
   id: string;
 }
 
 export default function registerRoutes(server: FastifyInstance<Server, IncomingMessage, ServerResponse, FastifyLoggerInstance>, opts: FastifyPluginOptions, done: Function) {
+
+  /*
+  server.addHook('preHandler', (req, res, done) => {
+    req.log.info('IN HOOK');
+    done();
+  });
+  */
 
   // list all templates
   // get specific template body
@@ -78,10 +94,17 @@ export default function registerRoutes(server: FastifyInstance<Server, IncomingM
   )
 
   server.post<{
-    Body: ICreateInstanceRequestBody
+    Body: CreateInstanceRequestBody
   }>(
     '/',
-    {},
+    {
+      schema: {
+        body: CreateInstanceRequestBodySchema,
+        response: {
+          200: CreateInstanceRequestBodySchema
+        }
+      }
+    },
     async (req, resp) => {
       const { name, content } = req.body;
       try {
@@ -96,11 +119,18 @@ export default function registerRoutes(server: FastifyInstance<Server, IncomingM
   )
 
   server.put<{
-    Body: IPutInstanceRequestBody
+    Body: PutInstanceRequestBody
     Params: IPutInstanceRequestUrl
   }>(
     '/:id',
-    {},
+    {
+      schema: {
+        body: PutInstanceRequestBodySchema,
+        response: {
+          200: CreateInstanceRequestBodySchema
+        }
+      }
+    },
     async (req, resp) => {
       const { id } = req.params;
       const { content } = req.body;

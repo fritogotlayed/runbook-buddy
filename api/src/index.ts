@@ -1,4 +1,5 @@
 import fastify from "fastify";
+import fastifyCors from "fastify-cors";
 
 import registerAuthRoutes from "./handlers/auth";
 import registerTemplateRoutes from "./handlers/template";
@@ -9,6 +10,9 @@ const server = fastify({ logger: { level: 'trace' } });
 server.get('/health', async (req, resp) => {
   return 'active\n';
 });
+
+// TODO: Only allow CORS for development
+server.register(fastifyCors)
 
 server.register(registerAuthRoutes, { prefix: '/auth' });
 server.register(registerTemplateRoutes, { prefix: '/template' });
