@@ -1,64 +1,64 @@
-import { useEffect, useState } from 'react';
-import { Link, Outlet } from 'react-router-dom';
-import { removeTemplateById, searchTemplates } from '../repos/templates';
+import { Box, Button, ButtonGroup, Paper, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 
-export default function ListTemplates() {
-  const [templates, setTemplates] = useState<Array<string>>();
+export type ItemDeletedCallback = (itemKey: string) => void;
+export type ItemViewCallback = (itemKey: string) => void;
+export type ItemEditCallback = (itemKey: string) => void;
 
+export interface IDisplayTemplateItem {
+  displayName: string,
+  itemKey: string,
+}
+export interface ListTemplateProps {
+  showCreateButton?: boolean,
+  onCreateButtonClick?: Function,
+  onItemViewClick?: ItemViewCallback,
+  onItemEditClick?: ItemEditCallback,
+  onItemDeletedClick?: ItemDeletedCallback,
+  data: Array<IDisplayTemplateItem>,
+}
+
+export default function ListTemplates(props: ListTemplateProps) {
   const removeTemplate = async (key: string) => {
-    await removeTemplateById(key);
-    setTemplates(undefined);
+    if (props.onItemDeletedClick) {
+      props.onItemDeletedClick(key);
+    }
   };
 
-  useEffect(() => {
-    const loadData = async () => {
-      const data = await searchTemplates('');
-      setTemplates(data);
-    }
-
-    if (!templates) {
-      loadData();
-    }
-  }, [templates]);
+  const createButton = props.showCreateButton === true ? ( 
+    <div>
+      <Button variant="contained" onClick={() => props.onCreateButtonClick && props.onCreateButtonClick()}>Create New Template</Button>
+    </div>
+  ) : '';
 
   // TODO: Update to be a list with options for view, edit and/or delete
   return(
-    <main style={{ padding: "1rem 0" }}>
-      <h2>Templates</h2>
-      <div>
-        <Link to="/templates/new" >Create New Template</Link>
-      </div>
-      <table style={{ margin: "1rem 0"}} >
-        <tbody>
-          {templates?.map((item) => (
-            <tr key={item}>
-              <td>
-                {item.replace(/_/g, ' ')}
-              </td>
-              <td>
-                <Link
-                  to={`/templates/${item}`}
-                  key={item}
-                >
-                  View
-                </Link>
-              </td>
-              <td>
-                <Link
-                  to={`/templates/${item}`}
-                  key={item}
-                >
-                  Edit
-                </Link>
-              </td>
-              <td>
-                <button onClick={() => removeTemplate(item)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <Outlet />
-    </main>
+    <Paper style={{ margin: "1em" }}>
+      <Box sx={{ padding: "1em"}}>
+        <Typography variant='h4'>
+          Templates
+        </Typography>
+        {createButton}
+        <TableContainer>
+          <Table>
+            <TableBody>
+              {props.data.map((item) => (
+                <TableRow key={item.itemKey}>
+                  <TableCell>
+                    {item.displayName}
+                  </TableCell>
+                  <TableCell>
+                    <ButtonGroup variant="outlined">
+                      <Button onClick={() => props.onItemViewClick && props.onItemViewClick(item.itemKey)}>View</Button>
+                      <Button onClick={() => props.onItemEditClick && props.onItemEditClick(item.itemKey)}>Edit</Button>
+                      <Button color="error" onClick={() => removeTemplate(item.itemKey)}>Delete</Button>
+                    </ButtonGroup>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    </Paper>
   );
 }

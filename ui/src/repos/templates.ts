@@ -1,22 +1,27 @@
 import axios from "axios";
 
+function buildUrl(part: string): string {
+  const { hostname } = window.location;
+  return `http://${hostname}:8080${part.startsWith('/') ? part : `/${part}`}`;
+}
+
 export async function searchTemplates(term: string) {
-  const data = await axios.get('http://localhost:8080/template');
+  const data = await axios.get(buildUrl('/template'));
   return data.data['results'];
 }
 
 export async function getTemplateById(id: string) {
-  const data = await axios.get(`http://localhost:8080/template/${id}`);
+  const data = await axios.get(buildUrl(`/template/${id}`));
   return data.data;
 }
 
 export async function removeTemplateById(id: string) {
-  await axios.delete(`http://localhost:8080/template/${id}`);
+  await axios.delete(buildUrl(`/template/${id}`));
 }
 
 export async function createTemplate(name: string, content: string) {
   await axios.post(
-    'http://localhost:8080/template',
+    buildUrl('/template'),
     JSON.stringify({ name, content }),
     {
       headers: {
@@ -26,18 +31,30 @@ export async function createTemplate(name: string, content: string) {
   );
 }
 
+export async function updateTemplate(id: string, content: string) {
+  await axios.put(
+    buildUrl(`/template/${id}`),
+    JSON.stringify({ content }),
+    {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+}
+
 export async function searchInstances(term: string) {
-  const data = await axios.get('http://localhost:8080/instance');
+  const data = await axios.get(buildUrl('/instance'));
   return data.data['results'];
 }
 
-export async function getInstanceById(id: string) {
-  const data = await axios.get(`http://localhost:8080/instance/${id}`);
-  return data.data;
+export async function getInstanceById(id: string): Promise<Array<IInstanceItem>> {
+  const data = await axios.get(buildUrl(`/instance/${id}`));
+  return data.data as Array<IInstanceItem>;
 }
 
 export async function removeInstanceById(id: string) {
-  await axios.delete(`http://localhost:8080/instance/${id}`);
+  await axios.delete(buildUrl(`/instance/${id}`));
 }
 
 export interface IInstanceItem {
@@ -46,7 +63,7 @@ export interface IInstanceItem {
 }
 export async function createInstance(name: string, content: Array<IInstanceItem>) {
   await axios.post(
-    'http://localhost:8080/instance',
+    buildUrl('/instance'),
     JSON.stringify({ name, content }),
     {
       headers: {
@@ -58,7 +75,7 @@ export async function createInstance(name: string, content: Array<IInstanceItem>
 
 export async function updateInstance(name: string, content: Array<IInstanceItem>) {
   await axios.put(
-    `http://localhost:8080/instance/${name}`,
+    buildUrl(`/instance/${name}`),
     JSON.stringify({ name, content }),
     {
       headers: {
