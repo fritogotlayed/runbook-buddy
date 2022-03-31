@@ -32,6 +32,9 @@ export default function CreateTemplate(props: ListTemplateProps) {
           New Template
         </Typography>
         <div>
+          You can use a double-curly-brace to create replaceable elements. Ex: {'{{foo}}'} 
+        </div>
+        <div>
           <TextField
             label="Name"
             value={id}

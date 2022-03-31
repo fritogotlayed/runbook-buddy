@@ -1,9 +1,15 @@
+import { Box, Button, ButtonGroup, Paper, Table, TableBody, TableCell, TableContainer, TableRow, Toolbar, Typography } from "@mui/material";
 import { useEffect, useState } from 'react';
-import { Link, Outlet } from 'react-router-dom';
 import { searchTemplates } from '../repos/templates';
 
-export default function ListTemplates() {
+export type ITemplateSelectedCallback = (templateId: string) => void;
+export interface ISelectTemplateProps {
+  onTemplateSelected: ITemplateSelectedCallback,
+}
+
+export default function SelectTemplates(props: ISelectTemplateProps) {
   const [templates, setTemplates] = useState<Array<string>>();
+  const { onTemplateSelected } = props;
 
   useEffect(() => {
     const loadData = async () => {
@@ -17,31 +23,32 @@ export default function ListTemplates() {
   }, [templates]);
 
   return(
-    <main style={{ padding: "1rem 0" }}>
-      <h2>Templates</h2>
-      <div>
-        <Link to="/templates/new" >Create New Template</Link>
-      </div>
-      <table style={{ margin: "1rem 0"}} >
-        <tbody>
-          {templates?.map((item) => (
-            <tr key={item}>
-              <td>
-                {item.replace(/_/g, ' ')}
-              </td>
-              <td>
-                <Link
-                  to={`/instances/new/${item}`}
-                  key={item}
-                >
-                  Select
-                </Link>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <Outlet />
-    </main>
+    <Paper style={{ margin: '1em' }}>
+      <Box sx={{ padding: '1em' }}>
+        <Toolbar>
+          <Typography sx={{ ml: 2, flex: 1 }} variant='h4' component="div">
+            Select a template to proceed
+          </Typography>
+        </Toolbar>
+        <TableContainer>
+          <Table>
+            <TableBody>
+              {templates?.map((item) => (
+                <TableRow key={item}>
+                  <TableCell>
+                    {item.replace(/_/g, ' ')}
+                  </TableCell>
+                  <TableCell width={'1px'}>
+                    <ButtonGroup variant="outlined">
+                      <Button onClick={() => onTemplateSelected && onTemplateSelected(item)}>Select</Button>
+                    </ButtonGroup>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    </Paper>
   );
 }

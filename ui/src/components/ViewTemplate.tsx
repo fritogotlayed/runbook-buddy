@@ -1,10 +1,10 @@
-import { AppBar, Box, IconButton, Paper, Toolbar, Typography } from "@mui/material";
+import { Box, IconButton, Paper, Toolbar, Typography } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 
 interface IViewTemplateProps {
   templateId: string,
   data: string,
-  onCloseClicked: Function,
+  onCloseClicked?: Function,
 };
 
 export default function ViewTemplate(props: IViewTemplateProps) {
@@ -24,7 +24,7 @@ export default function ViewTemplate(props: IViewTemplateProps) {
           <IconButton
             edge="end"
             color="inherit"
-            onClick={() => onCloseClicked()}
+            onClick={() => onCloseClicked && onCloseClicked()}
             aria-label="close"
           >
             <CloseIcon />

@@ -26,7 +26,7 @@ export default function ListTemplates(props: ListTemplateProps) {
 
   const createButton = props.showCreateButton === true ? ( 
     <div>
-      <Button variant="contained" onClick={() => props.onCreateButtonClick && props.onCreateButtonClick()}>Create New Template</Button>
+      <Button variant="contained" onClick={() => props.onCreateButtonClick && props.onCreateButtonClick()}>Create Template</Button>
     </div>
   ) : '';
 
@@ -46,7 +46,7 @@ export default function ListTemplates(props: ListTemplateProps) {
                   <TableCell>
                     {item.displayName}
                   </TableCell>
-                  <TableCell>
+                  <TableCell width={'1px'}>
                     <ButtonGroup variant="outlined">
                       <Button onClick={() => props.onItemViewClick && props.onItemViewClick(item.itemKey)}>View</Button>
                       <Button onClick={() => props.onItemEditClick && props.onItemEditClick(item.itemKey)}>Edit</Button>

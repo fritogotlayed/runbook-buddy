@@ -1,8 +1,25 @@
-import { useEffect, useState } from "react";
-import { Link, Outlet } from "react-router-dom";
-import { removeInstanceById, searchInstances } from "../repos/templates";
+import { Box, Button, ButtonGroup, Paper, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 
-export default function ListInstances() {
+import { useEffect, useState } from "react";
+import { removeInstanceById, searchInstances } from "../repos/instances";
+
+export type ItemDeletedCallback = (itemKey: string) => void;
+export type ItemViewCallback = (itemKey: string) => void;
+export type ItemEditCallback = (itemKey: string) => void;
+
+export interface IDisplayTemplateItem {
+  displayName: string,
+  itemKey: string,
+}
+export interface IListInstancesProps {
+  showCreateButton?: boolean,
+  onCreateButtonClick?: Function,
+  onItemViewClick?: ItemViewCallback,
+  onItemDeletedClick?: ItemDeletedCallback,
+  data: Array<IDisplayTemplateItem>,
+}
+
+export default function ListInstances(props: IListInstancesProps) {
   const [instances, setInstances] = useState<Array<string>>();
 
   const removeInstance = async (key: string) => {
@@ -21,43 +38,39 @@ export default function ListInstances() {
     }
   }, [instances]);
 
+  const createButton = props.showCreateButton === true ? ( 
+    <div>
+      <Button variant="contained" onClick={() => props.onCreateButtonClick && props.onCreateButtonClick()}>Create Instance</Button>
+    </div>
+  ) : '';
+
   return(
-    <main style={{ padding: "1rem 0" }}>
-      <h2>Instances</h2>
-      <div>
-        <Link to="/instances/new" >Create New Instance</Link>
-      </div>
-      <table style={{ margin: "1rem 0"}} >
-        <tbody>
-          {instances?.map((item) => (
-            <tr key={item}>
-              <td>
-                {item.replace(/_/g, ' ')}
-              </td>
-              <td>
-                <Link
-                  to={`/instances/${item}`}
-                  key={item}
-                >
-                  View
-                </Link>
-              </td>
-              <td>
-                <Link
-                  to={`/instances/${item}`}
-                  key={item}
-                >
-                  Edit
-                </Link>
-              </td>
-              <td>
-                <button onClick={() => removeInstance(item)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <Outlet />
-    </main>
+    <Paper style={{ margin: "1em" }}>
+      <Box sx={{ padding: "1em"}}>
+        <Typography variant='h4'>
+          Instances
+        </Typography>
+        {createButton}
+        <TableContainer>
+          <Table>
+            <TableBody>
+              {instances?.map((item) => (
+                <TableRow key={item}>
+                  <TableCell>
+                    {item.replace(/_/g, ' ')}
+                  </TableCell>
+                  <TableCell width={'1px'}>
+                    <ButtonGroup variant="outlined">
+                      <Button onClick={() => props.onItemViewClick && props.onItemViewClick(item)}>View</Button>
+                      <Button color="error" onClick={() => removeInstance(item)}>Delete</Button>
+                    </ButtonGroup>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    </Paper>
   );
 }

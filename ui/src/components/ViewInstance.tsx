@@ -1,36 +1,28 @@
-import { Button, Checkbox, FormControlLabel, FormGroup } from "@mui/material";
+import { Box, Button, Checkbox, FormControlLabel, FormGroup, IconButton, Paper, Toolbar, Typography } from "@mui/material";
+import CloseIcon from '@mui/icons-material/Close';
+
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom"
-import { getInstanceById, IInstanceItem, updateInstance } from "../repos/templates";
+import { getInstanceById, IInstanceItem, updateInstance } from "../repos/instances";
+
+export type SaveCallback = (instanceId: string, data: Array<IInstanceItem>) => void;
 
 interface IUIInstanceItem extends IInstanceItem { 
   originalState: boolean,
 }
 
-export default function ViewInstance() {
-  const params = useParams();
-  const { instanceId } = params;
+interface IViewInstanceProps {
+  instanceId: string,
+  data: Array<IInstanceItem>,
+  onCloseClicked: Function,
+  onSaveClicked: SaveCallback,
+};
 
-  const [id, setId] = useState<string>();
-  const [data, setData] = useState<Array<IUIInstanceItem>>();
+export default function ViewInstance(props: IViewInstanceProps) {
+  const { instanceId, data: inData, onCloseClicked, onSaveClicked } = props;
+
+  const [data, setData] = useState<Array<IUIInstanceItem>>(inData.map((e) => ({ ...e, originalState: e.completed })));
   const [isDirty, setIsDirty] = useState<boolean>(false);
-
-  useEffect(() => {
-    const loadData = async () => {
-      if (instanceId) {
-        const result = await getInstanceById(instanceId);
-        const workingData = result.map((e) => ({ ...e, originalState: e.completed }));
-        setIsDirty(false);
-        setData(workingData);
-      }
-    };
-
-    if (id !== instanceId) {
-      setId(instanceId);
-      loadData();
-    }
-
-  }, [data, id, instanceId]);
 
   const toggleItemCompleted = (key: string) => {
     const newData = data?.map((item) => {
@@ -45,8 +37,8 @@ export default function ViewInstance() {
 
   const save = async () => {
     if (instanceId && data) {
-      await updateInstance(instanceId, data);
-      await setId(undefined);
+      onSaveClicked(instanceId, data);
+      //await updateInstance(instanceId, data);
     }
   };
 
@@ -87,12 +79,26 @@ export default function ViewInstance() {
   }
 
   return(
-    <main>
-      <h2>Template: {instanceId?.replace(/_/g, ' ')}</h2>
-      {items}
-      <div>
-        <Button variant="contained" onClick={save} disabled={!isDirty}>Save</Button>
-      </div>
-    </main>
+    <Paper style={{ margin: '1em' }}>
+      <Box sx={{ padding: '1em' }}>
+        <Toolbar>
+          <Typography sx={{ ml: 2, flex: 1 }} variant='h4' component="div">
+            {instanceId?.replace(/_/g, ' ')}
+          </Typography>
+          <IconButton
+            edge="end"
+            color="inherit"
+            onClick={() => onCloseClicked()}
+            aria-label="close"
+          >
+            <CloseIcon />
+          </IconButton>
+        </Toolbar>
+        {items}
+        <div>
+          <Button variant="contained" onClick={save} disabled={!isDirty}>Save</Button>
+        </div>
+      </Box>
+    </Paper>
   );
 }
