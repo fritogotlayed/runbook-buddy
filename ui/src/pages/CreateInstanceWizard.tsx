@@ -63,11 +63,6 @@ export default function CreateTemplatePage() {
       }));
       await createInstance(newName, items);
 
-      // setTemplateId(undefined);
-      // setTemplateData(undefined);
-      // setInstanceData(undefined);
-      // setReplaceKeys(undefined);
-      // setReplacementMapping(new Map<string, string>());
       navigate('/instances');
     }
   }
@@ -87,10 +82,6 @@ export default function CreateTemplatePage() {
       <ViewTemplate templateId={templateId} data={instanceData || ''} />
     )
   }
-
-  // rightPanel = !rightPanel && viewInstanceData ? (
-  //   <ViewInstance instanceId={viewInstanceData.key} data={viewInstanceData.data} onCloseClicked={viewItemClosed} onSaveClicked={viewItemSaved} />
-  // ) : rightPanel;
 
   function computeLeftPanelWidth() {
     let mdWidth = 12;

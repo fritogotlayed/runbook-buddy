@@ -1,14 +1,15 @@
 import { Box, Button, Checkbox, FormControlLabel, FormGroup, IconButton, Paper, Toolbar, Typography } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom"
-import { getInstanceById, IInstanceItem, updateInstance } from "../repos/instances";
+import { useState } from "react";
+import { IInstanceItem } from "../repos/instances";
+import SearchInput from "./SearchInput";
 
 export type SaveCallback = (instanceId: string, data: Array<IInstanceItem>) => void;
 
 interface IUIInstanceItem extends IInstanceItem { 
   originalState: boolean,
+  visible: boolean,
 }
 
 interface IViewInstanceProps {
@@ -21,7 +22,7 @@ interface IViewInstanceProps {
 export default function ViewInstance(props: IViewInstanceProps) {
   const { instanceId, data: inData, onCloseClicked, onSaveClicked } = props;
 
-  const [data, setData] = useState<Array<IUIInstanceItem>>(inData.map((e) => ({ ...e, originalState: e.completed })));
+  const [data, setData] = useState<Array<IUIInstanceItem>>(inData.map((e) => ({ ...e, originalState: e.completed, visible: true })));
   const [isDirty, setIsDirty] = useState<boolean>(false);
 
   const toggleItemCompleted = (key: string) => {
@@ -38,29 +39,13 @@ export default function ViewInstance(props: IViewInstanceProps) {
   const save = async () => {
     if (instanceId && data) {
       onSaveClicked(instanceId, data);
-      //await updateInstance(instanceId, data);
     }
   };
 
   let items;
-  // if (data) {
-  //   items = data.map((item, i) => (
-  //     <span key={i}>
-  //       <input
-  //         type="checkbox"
-  //         name={item.data}
-  //         value={item.data}
-  //         id={item.data}
-  //         checked={item.completed}
-  //         onChange={() => toggleItemCompleted(item.data)} />
-  //       <label htmlFor={item.data}>{item.data}</label>
-  //       <br />
-  //     </span>
-  //   ));
-  // }
 
   if (data) {
-    const subData = data.map((item, i) => (
+    const subData = data.filter((e) => e.visible).map((item, i) => (
       <FormControlLabel
         key={i}
         checked={item.completed}
@@ -78,9 +63,29 @@ export default function ViewInstance(props: IViewInstanceProps) {
     );
   }
 
+  const searchTermUpdated = (term?: string) => {
+    if (term) {
+      const exp = new RegExp(term, 'ig');
+      /*
+        const expression = `{{${replaceKeys[i]}}}`;
+        workingData = workingData.replace(new RegExp(expression, 'g'), replacementMapping.get(replaceKeys[i]) || expression);
+      */
+      setData(
+        data.map((i) => ({
+          ...i,
+          visible: exp.test(i.data)
+        }))
+      );
+    } else {
+      setData(
+        data.map((i) => ({...i, visible: true}))
+      );
+    }
+  };
+
   return(
     <Paper style={{ margin: '1em' }}>
-      <Box sx={{ padding: '1em' }}>
+      <Box sx={{ padding: '1em' }} >
         <Toolbar>
           <Typography sx={{ ml: 2, flex: 1 }} variant='h4' component="div">
             {instanceId?.replace(/_/g, ' ')}
@@ -94,6 +99,9 @@ export default function ViewInstance(props: IViewInstanceProps) {
             <CloseIcon />
           </IconButton>
         </Toolbar>
+        <div>
+          <SearchInput onSearchTermUpdated={searchTermUpdated} />
+        </div>
         {items}
         <div>
           <Button variant="contained" onClick={save} disabled={!isDirty}>Save</Button>
