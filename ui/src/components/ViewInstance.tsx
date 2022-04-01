@@ -38,7 +38,7 @@ export default function ViewInstance(props: IViewInstanceProps) {
 
   const save = async () => {
     if (instanceId && data) {
-      onSaveClicked(instanceId, data);
+      onSaveClicked(instanceId, data.map(e => ({data: e.data, completed: e.completed})));
     }
   };
 
