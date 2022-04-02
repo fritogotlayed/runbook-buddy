@@ -1,7 +1,6 @@
 import fastify from "fastify";
 import fastifyCors from "fastify-cors";
 
-import registerAuthRoutes from "./handlers/auth";
 import registerTemplateRoutes from "./handlers/template";
 import registerInstanceRoutes from "./handlers/instance";
 
@@ -14,7 +13,6 @@ server.get('/health', async (req, resp) => {
 // TODO: Only allow CORS for development
 server.register(fastifyCors)
 
-server.register(registerAuthRoutes, { prefix: '/auth' });
 server.register(registerTemplateRoutes, { prefix: '/template' });
 server.register(registerInstanceRoutes, { prefix: '/instance' });
 
