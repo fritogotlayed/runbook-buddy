@@ -1,17 +1,11 @@
 import { Grid } from "@mui/material";
-import { Fragment, useEffect, useState } from "react";
-import { createInstance, getInstanceById, IInstanceItem, removeInstanceById, searchInstances, updateInstance } from "../repos/instances";
-import ViewInstance from "../components/ViewInstance";
+import { Fragment, useState } from "react";
+import { createInstance } from "../repos/instances";
 import SelectTemplate from "../components/SelectTemplate";
 import ViewTemplate from "../components/ViewTemplate";
 import CreateInstance from "../components/CreateInstance";
 import { getTemplateById } from "../repos/templates";
 import { useNavigate } from "react-router";
-
-interface IInstanceData {
-  key: string,
-  data: IInstanceItem[]
-}
 
 export default function CreateTemplatePage() {
   const [templateId, setTemplateId] = useState<string>();
@@ -20,8 +14,6 @@ export default function CreateTemplatePage() {
   const [replaceKeys, setReplaceKeys]  = useState<string[]>();
   const [replacementMapping, setReplacementMapping] = useState<Map<string, string>>(new Map<string, string>());
   const navigate = useNavigate();
-
-  // const [viewInstanceData, setViewInstanceData] = useState<IInstanceData>();
 
   const templateSelected = async (templateId: string) => {
     const data = await getTemplateById(templateId);

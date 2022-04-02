@@ -41,18 +41,13 @@ interface IDeleteInstanceRequestUrl {
 
 export default function registerRoutes(server: FastifyInstance<Server, IncomingMessage, ServerResponse, FastifyLoggerInstance>, opts: FastifyPluginOptions, done: Function) {
 
-  /*
+  /* TODO: Sample for header check hook
   server.addHook('preHandler', (req, res, done) => {
     req.log.info('IN HOOK');
     done();
   });
   */
 
-  // list all templates
-  // get specific template body
-  // create template
-  // replace/update template
-  // remove template
   server.get<{}>(
     '/',
     {},

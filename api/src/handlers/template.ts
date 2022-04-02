@@ -30,11 +30,6 @@ interface IDeleteTemplateRequestUrl {
 
 export default function registerRoutes(server: FastifyInstance<Server, IncomingMessage, ServerResponse, FastifyLoggerInstance>, opts: FastifyPluginOptions, done: Function) {
 
-  // list all templates
-  // get specific template body
-  // create template
-  // replace/update template
-  // remove template
   server.get<{}>(
     '/',
     {},
