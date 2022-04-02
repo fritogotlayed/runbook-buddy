@@ -18,6 +18,12 @@ export default function SearchInput(props: ISearchInputProps) {
       props.onSearchTermUpdated(undefined);
     }
   };
+
+  const searchKeyDown = (key: string) => {
+    if (key === 'Enter' && props.onSearchTermUpdated) {
+      props.onSearchTermUpdated(searchTerm);
+    }
+  };
   
   return (
     <FormControl sx={{ m: 1 }} variant="outlined" fullWidth >
@@ -27,10 +33,11 @@ export default function SearchInput(props: ISearchInputProps) {
         value={searchTerm}
         name="Search"
         onChange={(event) => setSearchTerm(event.target.value)}
+        onKeyDown={(event) => searchKeyDown(event.key)}
         endAdornment={
           <InputAdornment position="end">
             <ButtonGroup>
-              <IconButton edge="end" onClick={() => props.onSearchTermUpdated && props.onSearchTermUpdated(searchTerm)}>
+              <IconButton edge="end" onClick={() => searchKeyDown('Enter')}>
                 <Search />
               </IconButton>
               {props.showClearButton || true ? (
