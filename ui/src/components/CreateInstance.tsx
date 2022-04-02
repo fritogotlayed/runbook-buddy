@@ -1,65 +1,70 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { createInstance, getTemplateById } from "../repos/templates";
+import { Button, Paper, TextField, Typography } from "@mui/material";
+import { Box } from "@mui/system";
+import { useState } from "react";
 
-export default function CreateInstance() {
-  const params = useParams();
-  const { templateId } = params;
+export type CreateCallback = (name: string) => void;
+export type FieldUpdatedCallback = (key: string, value: string) => void;
+export interface ICreateInstanceProps {
+  keys?: string[],
+  onFieldUpdated?: FieldUpdatedCallback,
+  onCreateButtonClick?: CreateCallback,
+}
 
-  const [id, setId] = useState<string>();
-  const [data, setData] = useState<string>();
-  const [instanceName, setInstanceName] = useState<string>();
+export default function CreateInstance(props: ICreateInstanceProps) {
+  const { keys, onFieldUpdated, onCreateButtonClick } = props;
+  const [name, setName] = useState<string>();
 
-  useEffect(() => {
-    const loadData = async () => {
-      if (!data && templateId) {
-        const result = await getTemplateById(templateId);
-        setData(result);
-      }
-    };
-
-    loadData();
-
-  }, [data, templateId]);
-
-  const create = () => {
-    if (data) {
-      const content = data.split('\n').map((item) => ({ completed: false, data: item }));
-      createInstance(instanceName as string, content);
+  const updateField = (key: string, value: string) => {
+    if (onFieldUpdated) {
+      onFieldUpdated(key, value);
     }
   };
 
-  const updateName = (name: string) => {
-    const newName = name.replace(/ /g, '_')
-    setInstanceName(newName);
-    setId(name);
-  };
+  const createClicked = () => {
+    if (name && onCreateButtonClick) {
+      onCreateButtonClick(name);
+    }
+  }
 
-  let items;
-  if (data) {
-    items = data.split('\n').map((line, i) => (<span key={i}>{line}<br /></span>));
+  let inputFields;
+  if (keys && keys.length > 0) {
+    inputFields = keys.map((k) => (
+      <div key={k}>
+        <TextField
+          label={k}
+          sx={{width: '100%'}}
+          onChange={event => updateField(k, event.target.value)}
+          variant="standard" />
+      </div>
+    ));
+  } else {
+    inputFields = (
+      <div>
+        No fields to replace!
+      </div>
+    )
   }
 
   return(
-    <main>
-      <h2>Template: {templateId?.replace(/_/g, ' ')}</h2>
-      <h2>Name: {instanceName?.replace(/_/g, ' ')}</h2>
-      <div>
-        Name:
-        <input
-          type="text"
-          value={id}
-          onChange={event => updateName(event.target.value)}></input>
-      </div>
-      <div>
-        Body:
+    <Paper sx={{ margin: "1em" }}>
+      <Box sx={{ padding: "1em" }}>
+        <Typography variant="h4">
+          New Template
+        </Typography>
         <div>
-          {items}
+          <TextField
+            label="Name"
+            sx={{width: '100%'}}
+            onChange={event => setName(event.target.value)}
+            variant="standard" />
         </div>
-      </div>
-      <div>
-        <button onClick={create}>Create</button>
-      </div>
-    </main>
+        {inputFields}
+        <div>
+          <Button variant="contained" onClick={createClicked} sx={{
+            marginTop: '1em',
+          }}>Create</Button>
+        </div>
+      </Box>
+    </Paper>
   );
 }

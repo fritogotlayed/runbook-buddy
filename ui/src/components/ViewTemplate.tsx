@@ -1,37 +1,37 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom"
-import { getTemplateById } from "../repos/templates";
+import { Box, IconButton, Paper, Toolbar, Typography } from "@mui/material";
+import CloseIcon from '@mui/icons-material/Close';
 
-export default function ViewTemplate() {
-  const params = useParams();
-  const { templateId } = params;
+interface IViewTemplateProps {
+  templateId: string,
+  data: string,
+  onCloseClicked?: Function,
+};
 
-  const [id, setId] = useState<string>();
-  const [data, setData] = useState<string>();
-
-  useEffect(() => {
-    const loadData = async () => {
-      if (templateId) {
-        const result = await getTemplateById(templateId);
-        setData(result);
-      }
-    };
-
-    if (id !== templateId) {
-      setId(templateId);
-      loadData();
-    }
-
-  }, [data, id, templateId]);
+export default function ViewTemplate(props: IViewTemplateProps) {
+  const { templateId, data, onCloseClicked } = props;
 
   let items;
   if (data) {
     items = data.split('\n').map((line, i) => (<span key={i}>{line}<br /></span>));
   }
   return(
-    <main>
-      <h2>Template: {templateId?.replace(/_/g, ' ')}</h2>
-      {items}
-    </main>
+    <Paper style={{ margin: "1em" }}>
+      <Box sx={{ padding: "1em"}}>
+        <Toolbar>
+          <Typography sx={{ ml: 2, flex: 1 }} variant="h4" component="div">
+            {templateId.replace(/_/g, ' ')}
+          </Typography>
+          <IconButton
+            edge="end"
+            color="inherit"
+            onClick={() => onCloseClicked && onCloseClicked()}
+            aria-label="close"
+          >
+            <CloseIcon />
+          </IconButton>
+        </Toolbar>
+        {items}
+      </Box>
+    </Paper>
   );
 }

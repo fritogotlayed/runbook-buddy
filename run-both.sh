@@ -15,15 +15,15 @@ if [[ "$MODE" == "SPLIT" ]]
 then
     # Start API and UI in split view
     tmux rename-window "Runbook Buddy";
-    tmux send-keys 'npm run start' ENTER;
+    tmux send-keys 'npm install && npm run start' ENTER;
     tmux split-window -h -c "$PWD/ui";
-    tmux send-keys 'npm run start' ENTER;
+    tmux send-keys 'npm install && npm run start' ENTER;
 else
     # Start API and UI in separate windows
     tmux rename-window "Runbook Buddy - API";
-    tmux send-keys 'npm run start' ENTER;
+    tmux send-keys 'npm install && npm run start' ENTER;
     tmux new-window -c "$PWD/ui/" -n "Runbook Buddy - UI";
-    tmux send-keys 'npm run start' ENTER;
+    tmux send-keys 'npm install && npm run start' ENTER;
 fi
 
 # We're all done so attach for the user

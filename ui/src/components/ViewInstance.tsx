@@ -1,28 +1,29 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom"
-import { getInstanceById, IInstanceItem, updateInstance } from "../repos/templates";
+import { Box, Button, Checkbox, FormControlLabel, FormGroup, IconButton, Paper, Toolbar, Typography } from "@mui/material";
+import CloseIcon from '@mui/icons-material/Close';
 
-export default function ViewInstance() {
-  const params = useParams();
-  const { instanceId } = params;
+import { useState } from "react";
+import { IInstanceItem } from "../repos/instances";
+import SearchInput from "./SearchInput";
 
-  const [id, setId] = useState<string>();
-  const [data, setData] = useState<Array<IInstanceItem>>();
+export type SaveCallback = (instanceId: string, data: Array<IInstanceItem>) => void;
 
-  useEffect(() => {
-    const loadData = async () => {
-      if (instanceId) {
-        const result = await getInstanceById(instanceId);
-        setData(result);
-      }
-    };
+interface IUIInstanceItem extends IInstanceItem { 
+  originalState: boolean,
+  visible: boolean,
+}
 
-    if (id !== instanceId) {
-      setId(instanceId);
-      loadData();
-    }
+interface IViewInstanceProps {
+  instanceId: string,
+  data: Array<IInstanceItem>,
+  onCloseClicked: Function,
+  onSaveClicked: SaveCallback,
+};
 
-  }, [data, id, instanceId]);
+export default function ViewInstance(props: IViewInstanceProps) {
+  const { instanceId, data: inData, onCloseClicked, onSaveClicked } = props;
+
+  const [data, setData] = useState<Array<IUIInstanceItem>>(inData.map((e) => ({ ...e, originalState: e.completed, visible: true })));
+  const [isDirty, setIsDirty] = useState<boolean>(false);
 
   const toggleItemCompleted = (key: string) => {
     const newData = data?.map((item) => {
@@ -32,37 +33,80 @@ export default function ViewInstance() {
       return item;
     });
     setData(newData);
+    setIsDirty(true);
   };
 
   const save = async () => {
     if (instanceId && data) {
-      await updateInstance(instanceId, data);
+      onSaveClicked(instanceId, data.map(e => ({data: e.data, completed: e.completed})));
     }
   };
 
   let items;
+
   if (data) {
-    items = data.map((item, i) => (
-      <span key={i}>
-        <input
-          type="checkbox"
-          name={item.data}
-          value={item.data}
-          id={item.data}
-          checked={item.completed}
-          onChange={() => toggleItemCompleted(item.data)} />
-        <label htmlFor={item.data}>{item.data}</label>
-        <br />
-      </span>
+    const subData = data.filter((e) => e.visible).map((item, i) => (
+      <FormControlLabel
+        key={i}
+        checked={item.completed}
+        onChange={() => toggleItemCompleted(item.data)}
+        control={<Checkbox />}
+        label={item.data}
+        sx={{
+          color: item.completed !== item.originalState ? '#FF0000' : '',
+          fontWeight: item.completed !== item.originalState ? 'bolder' : 'normal',
+        }}
+      />
     ));
+    items = (
+      <FormGroup>{subData}</FormGroup>
+    );
   }
+
+  const searchTermUpdated = (term?: string) => {
+    if (term) {
+      const exp = new RegExp(term, 'ig');
+      /*
+        const expression = `{{${replaceKeys[i]}}}`;
+        workingData = workingData.replace(new RegExp(expression, 'g'), replacementMapping.get(replaceKeys[i]) || expression);
+      */
+      setData(
+        data.map((i) => ({
+          ...i,
+          visible: exp.test(i.data)
+        }))
+      );
+    } else {
+      setData(
+        data.map((i) => ({...i, visible: true}))
+      );
+    }
+  };
+
   return(
-    <main>
-      <h2>Template: {instanceId?.replace(/_/g, ' ')}</h2>
-      {items}
-      <div>
-        <button onClick={save}>Save</button>
-      </div>
-    </main>
+    <Paper style={{ margin: '1em' }}>
+      <Box sx={{ padding: '1em' }} >
+        <Toolbar>
+          <Typography sx={{ ml: 2, flex: 1 }} variant='h4' component="div">
+            {instanceId?.replace(/_/g, ' ')}
+          </Typography>
+          <IconButton
+            edge="end"
+            color="inherit"
+            onClick={() => onCloseClicked()}
+            aria-label="close"
+          >
+            <CloseIcon />
+          </IconButton>
+        </Toolbar>
+        <div>
+          <SearchInput onSearchTermUpdated={searchTermUpdated} />
+        </div>
+        {items}
+        <div>
+          <Button variant="contained" onClick={save} disabled={!isDirty}>Save</Button>
+        </div>
+      </Box>
+    </Paper>
   );
 }

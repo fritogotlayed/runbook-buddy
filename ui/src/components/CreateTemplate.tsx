@@ -1,25 +1,17 @@
-import { useEffect, useState } from "react";
-import { createTemplate } from "../repos/templates";
+import { Button, Paper, TextField, Typography } from "@mui/material";
+import { Box } from "@mui/system";
+import { useState } from "react";
 
-export default function CreateTemplate() {
+export type CreateCallback = (templateId: string, data: string) => void;
+
+export interface ListTemplateProps {
+  onCreateButtonClick?: CreateCallback,
+}
+
+export default function CreateTemplate(props: ListTemplateProps) {
   const [templateId, setTemplateId] = useState<string>();
   const [id, setId] = useState<string>();
   const [data, setData] = useState<string>();
-
-  useEffect(() => {
-    // const loadData = async () => {
-    //   if (templateId) {
-    //     const result = await getTemplateById(templateId);
-    //     setData(result);
-    //   }
-    // };
-
-    // if (id !== templateId) {
-    //   setId(templateId);
-    //   loadData();
-    // }
-
-  }, [data, id, templateId]);
 
   const updateName = (name: string) => {
     const newName = name.replace(/ /g, '_');
@@ -28,28 +20,44 @@ export default function CreateTemplate() {
   };
 
   const create = () => {
-    createTemplate(templateId as string, data as string);
+    if (templateId && data && props.onCreateButtonClick) {
+      props.onCreateButtonClick(templateId, data);
+    }
   };
 
   return(
-    <main>
-      <h2>Template: {templateId?.replace(/_/g, ' ')}</h2>
-      <div>
-        Name:
-        <input
-          type="text"
-          value={id}
-          onChange={event => updateName(event.target.value)}></input>
-      </div>
-      <div>
-        Body:
-        <textarea
-          value={data}
-          onChange={event => setData(event.target.value)}></textarea>
-      </div>
-      <div>
-        <button onClick={create}>Create</button>
-      </div>
-    </main>
+    <Paper sx={{ margin: "1em" }}>
+      <Box sx={{ padding: "1em" }}>
+        <Typography variant="h4">
+          New Template
+        </Typography>
+        <div>
+          You can use a double-curly-brace to create replaceable elements. Ex: {'{{foo}}'} 
+        </div>
+        <div>
+          <TextField
+            label="Name"
+            value={id}
+            sx={{width: '100%'}}
+            onChange={event => updateName(event.target.value)}
+            variant="standard" />
+        </div>
+        <div>
+          <TextField
+            label="Body"
+            value={data}
+            multiline={true}
+            rows={Math.max(5, (data?.split(/\r\n|\r|\n/).length || 0))}
+            sx={{width: '100%'}}
+            onChange={event => setData(event.target.value)}
+            variant="standard"></TextField>
+        </div>
+        <div>
+          <Button variant="contained" onClick={create} sx={{
+            marginTop: '1em',
+          }}>Create</Button>
+        </div>
+      </Box>
+    </Paper>
   );
 }
