@@ -2,6 +2,7 @@ import { Button, IconButton, Paper, TextField, Toolbar, Typography } from "@mui/
 import { Box } from "@mui/system";
 import CloseIcon from '@mui/icons-material/Close';
 import { useState } from "react";
+import { Save } from "@mui/icons-material";
 
 export type UpdateCallback = (templateId: string, data: string) => void;
 
@@ -27,7 +28,7 @@ export default function EditTemplate(props: EditTemplateProps) {
     <Paper sx={{ margin: "1em" }}>
       <Box sx={{ padding: "1em" }}>
         <Toolbar>
-          <Typography sx={{ ml: 2, flex: 1 }} variant="h4" component="div">
+          <Typography sx={{ ml: 2, flex: 1 }} variant="h5" component="div">
             Update Template
           </Typography>
           <IconButton
@@ -39,15 +40,15 @@ export default function EditTemplate(props: EditTemplateProps) {
             <CloseIcon />
           </IconButton>
         </Toolbar>
-        <div>
+        <Box>
           <TextField
             label="Name"
             value={templateId.replace(/_/g, ' ')}
             sx={{width: '100%'}}
             disabled={true}
             variant="standard" />
-        </div>
-        <div>
+        </Box>
+        <Box>
           <TextField
             label="Body"
             value={data}
@@ -56,12 +57,12 @@ export default function EditTemplate(props: EditTemplateProps) {
             sx={{width: '100%'}}
             onChange={event => setData(event.target.value)}
             variant="standard"></TextField>
-        </div>
-        <div>
+        </Box>
+        <Box>
           <Button variant="contained" onClick={update} sx={{
             marginTop: '1em',
-          }}>Update</Button>
-        </div>
+          }}><Save /></Button>
+        </Box>
       </Box>
     </Paper>
   );
