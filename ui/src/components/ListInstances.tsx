@@ -1,4 +1,5 @@
-import { Box, Button, ButtonGroup, Paper, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
+import { Add, Delete, Visibility } from '@mui/icons-material';
+import { Box, Button, ButtonGroup, makeStyles, Paper, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 
 import { useEffect, useState } from "react";
 import { removeInstanceById, searchInstances } from "../repos/instances";
@@ -39,15 +40,17 @@ export default function ListInstances(props: IListInstancesProps) {
   }, [instances]);
 
   const createButton = props.showCreateButton === true ? ( 
-    <div>
-      <Button variant="contained" onClick={() => props.onCreateButtonClick && props.onCreateButtonClick()}>Create Instance</Button>
-    </div>
+    <Box>
+      <Button
+        variant="contained"
+        onClick={() => props.onCreateButtonClick && props.onCreateButtonClick()}><Add /></Button>
+    </Box>
   ) : '';
 
   return(
     <Paper style={{ margin: "1em" }}>
       <Box sx={{ padding: "1em"}}>
-        <Typography variant='h4'>
+        <Typography variant='h5'>
           Instances
         </Typography>
         {createButton}
@@ -61,8 +64,15 @@ export default function ListInstances(props: IListInstancesProps) {
                   </TableCell>
                   <TableCell width={'1px'}>
                     <ButtonGroup variant="outlined">
-                      <Button onClick={() => props.onItemViewClick && props.onItemViewClick(item)}>View</Button>
-                      <Button color="error" onClick={() => removeInstance(item)}>Delete</Button>
+                      <Button
+                        onClick={() => props.onItemViewClick && props.onItemViewClick(item)}>
+                        <Visibility />
+                      </Button>
+                      <Button
+                        color="error"
+                        onClick={() => removeInstance(item)}>
+                        <Delete />
+                      </Button>
                     </ButtonGroup>
                   </TableCell>
                 </TableRow>

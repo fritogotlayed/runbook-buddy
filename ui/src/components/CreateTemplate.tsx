@@ -1,3 +1,4 @@
+import { Save } from "@mui/icons-material";
 import { Button, Paper, TextField, Typography } from "@mui/material";
 import { Box } from "@mui/system";
 import { useState } from "react";
@@ -28,21 +29,21 @@ export default function CreateTemplate(props: ListTemplateProps) {
   return(
     <Paper sx={{ margin: "1em" }}>
       <Box sx={{ padding: "1em" }}>
-        <Typography variant="h4">
+        <Typography variant="h5">
           New Template
         </Typography>
-        <div>
+        <Box>
           You can use a double-curly-brace to create replaceable elements. Ex: {'{{foo}}'} 
-        </div>
-        <div>
+        </Box>
+        <Box>
           <TextField
             label="Name"
             value={id}
             sx={{width: '100%'}}
             onChange={event => updateName(event.target.value)}
             variant="standard" />
-        </div>
-        <div>
+        </Box>
+        <Box>
           <TextField
             label="Body"
             value={data}
@@ -51,12 +52,12 @@ export default function CreateTemplate(props: ListTemplateProps) {
             sx={{width: '100%'}}
             onChange={event => setData(event.target.value)}
             variant="standard"></TextField>
-        </div>
-        <div>
+        </Box>
+        <Box>
           <Button variant="contained" onClick={create} sx={{
             marginTop: '1em',
-          }}>Create</Button>
-        </div>
+          }}><Save /></Button>
+        </Box>
       </Box>
     </Paper>
   );

@@ -1,3 +1,4 @@
+import { Save } from "@mui/icons-material";
 import { Button, Paper, TextField, Typography } from "@mui/material";
 import { Box } from "@mui/system";
 import { useState } from "react";
@@ -48,22 +49,22 @@ export default function CreateInstance(props: ICreateInstanceProps) {
   return(
     <Paper sx={{ margin: "1em" }}>
       <Box sx={{ padding: "1em" }}>
-        <Typography variant="h4">
+        <Typography variant="h5">
           New Template
         </Typography>
-        <div>
+        <Box>
           <TextField
             label="Name"
             sx={{width: '100%'}}
             onChange={event => setName(event.target.value)}
             variant="standard" />
-        </div>
+        </Box>
         {inputFields}
-        <div>
+        <Box>
           <Button variant="contained" onClick={createClicked} sx={{
             marginTop: '1em',
-          }}>Create</Button>
-        </div>
+          }}><Save /></Button>
+        </Box>
       </Box>
     </Paper>
   );

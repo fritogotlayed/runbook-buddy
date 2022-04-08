@@ -1,3 +1,4 @@
+import { Add, Delete, Edit, Visibility } from '@mui/icons-material';
 import { Box, Button, ButtonGroup, Paper, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 
 export type ItemDeletedCallback = (itemKey: string) => void;
@@ -26,7 +27,7 @@ export default function ListTemplates(props: ListTemplateProps) {
 
   const createButton = props.showCreateButton === true ? ( 
     <div>
-      <Button variant="contained" onClick={() => props.onCreateButtonClick && props.onCreateButtonClick()}>Create Template</Button>
+      <Button variant="contained" onClick={() => props.onCreateButtonClick && props.onCreateButtonClick()}><Add /></Button>
     </div>
   ) : '';
 
@@ -34,7 +35,7 @@ export default function ListTemplates(props: ListTemplateProps) {
   return(
     <Paper style={{ margin: "1em" }}>
       <Box sx={{ padding: "1em"}}>
-        <Typography variant='h4'>
+        <Typography variant='h5'>
           Templates
         </Typography>
         {createButton}
@@ -48,9 +49,15 @@ export default function ListTemplates(props: ListTemplateProps) {
                   </TableCell>
                   <TableCell width={'1px'}>
                     <ButtonGroup variant="outlined">
-                      <Button onClick={() => props.onItemViewClick && props.onItemViewClick(item.itemKey)}>View</Button>
-                      <Button onClick={() => props.onItemEditClick && props.onItemEditClick(item.itemKey)}>Edit</Button>
-                      <Button color="error" onClick={() => removeTemplate(item.itemKey)}>Delete</Button>
+                      <Button onClick={() => props.onItemViewClick && props.onItemViewClick(item.itemKey)}>
+                        <Visibility />
+                      </Button>
+                      <Button onClick={() => props.onItemEditClick && props.onItemEditClick(item.itemKey)}>
+                        <Edit />
+                      </Button>
+                      <Button color="error" onClick={() => removeTemplate(item.itemKey)}>
+                        <Delete />
+                      </Button>
                     </ButtonGroup>
                   </TableCell>
                 </TableRow>

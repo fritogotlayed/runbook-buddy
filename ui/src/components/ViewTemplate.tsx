@@ -18,7 +18,7 @@ export default function ViewTemplate(props: IViewTemplateProps) {
     <Paper style={{ margin: "1em" }}>
       <Box sx={{ padding: "1em"}}>
         <Toolbar>
-          <Typography sx={{ ml: 2, flex: 1 }} variant="h4" component="div">
+          <Typography sx={{ ml: 2, flex: 1 }} variant="h5" component="div">
             {templateId.replace(/_/g, ' ')}
           </Typography>
           <IconButton
