@@ -1,9 +1,6 @@
 import { Add, Delete, Visibility } from '@mui/icons-material';
 import { Box, Button, ButtonGroup, Paper, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 
-import { useEffect, useState } from "react";
-import { removeInstanceById, searchInstances } from "../repos/instances";
-
 export type ItemDeletedCallback = (itemKey: string) => void;
 export type ItemViewCallback = (itemKey: string) => void;
 export type ItemEditCallback = (itemKey: string) => void;
@@ -21,29 +18,19 @@ export interface IListInstancesProps {
 }
 
 export default function ListInstances(props: IListInstancesProps) {
-  const [instances, setInstances] = useState<Array<string>>();
+  const { data, showCreateButton, onCreateButtonClick, onItemDeletedClick, onItemViewClick } = props;
 
   const removeInstance = async (key: string) => {
-    await removeInstanceById(key);
-    setInstances(undefined);
+    if (onItemDeletedClick) {
+      onItemDeletedClick(key);
+    }
   };
 
-  useEffect(() => {
-    const loadData = async () => {
-      const data = await searchInstances('');
-      setInstances(data);
-    }
-
-    if (!instances) {
-      loadData();
-    }
-  }, [instances]);
-
-  const createButton = props.showCreateButton === true ? ( 
+  const createButton = showCreateButton === true ? ( 
     <Box>
       <Button
         variant="contained"
-        onClick={() => props.onCreateButtonClick && props.onCreateButtonClick()}><Add /></Button>
+        onClick={() => onCreateButtonClick && onCreateButtonClick()}><Add /></Button>
     </Box>
   ) : '';
 
@@ -57,20 +44,20 @@ export default function ListInstances(props: IListInstancesProps) {
         <TableContainer>
           <Table>
             <TableBody>
-              {instances?.map((item) => (
-                <TableRow key={item}>
+              {data.map((item) => (
+                <TableRow key={item.itemKey}>
                   <TableCell>
-                    {item.replace(/_/g, ' ')}
+                    {item.displayName}
                   </TableCell>
                   <TableCell width={'1px'}>
                     <ButtonGroup variant="outlined">
                       <Button
-                        onClick={() => props.onItemViewClick && props.onItemViewClick(item)}>
+                        onClick={() => onItemViewClick && onItemViewClick(item.itemKey)}>
                         <Visibility />
                       </Button>
                       <Button
                         color="error"
-                        onClick={() => removeInstance(item)}>
+                        onClick={() => removeInstance(item.itemKey)}>
                         <Delete />
                       </Button>
                     </ButtonGroup>

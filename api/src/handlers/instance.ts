@@ -130,8 +130,11 @@ export default function registerRoutes(server: FastifyInstance<Server, IncomingM
       const { id } = req.params;
       const { content } = req.body;
       try {
+        console.dir(req.headers);
+        console.dir(content);
         const filePath = __dirname + '/../../data/' + id + '.instance';
-        await writeFileContents(filePath, JSON.stringify(content), true);
+        const sanitizedContent = content.map((e) => ({ completed: e.completed, data: e.data }));
+        await writeFileContents(filePath, JSON.stringify(sanitizedContent), true);
         return { name: id, content };
       } catch (err) {
         console.dir(err);
