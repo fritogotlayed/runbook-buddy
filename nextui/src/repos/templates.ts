@@ -1,40 +1,37 @@
-import { buildUrl } from "./common";
-
 export async function searchTemplates(term: string) {
-  const data = await fetch(buildUrl('/template'))
+  const data = await fetch('/api/templates')
     .then(res => res.json());
   return data.results;
 }
 
 export async function getTemplateById(id: string): Promise<string> {
-  const data = await fetch(buildUrl(`/template/${id}`))
+  const data = await fetch(`/api/templates/${id}`)
     .then(res => res.text());
-    // .then(res => res.json());
   return data;
 }
 
 export async function removeTemplateById(id: string) {
-  await fetch(buildUrl(`/template/${id}`), {
-    method: 'DELETE',
-  })
+  await fetch(`/api/templates/${id}`, {
+    method: 'DELETE'
+  });
 }
 
 export async function createTemplate(name: string, content: string) {
-  await fetch(buildUrl('/template'), {
+  await fetch('/api/templates', {
     method: 'POST',
     body: JSON.stringify({ name, content }),
     headers: {
       'Content-Type': 'application/json'
     }
-  })
+  });
 }
 
 export async function updateTemplate(id: string, content: string) {
-  await fetch(buildUrl(`/template/${id}`), {
+  await fetch(`/api/templates/${id}`, {
     method: 'PUT',
     body: JSON.stringify({ content }),
     headers: {
       'Content-Type': 'application/json'
     }
-  })
+  });
 }
