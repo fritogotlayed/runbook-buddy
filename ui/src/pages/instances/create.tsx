@@ -1,19 +1,20 @@
 import { Grid } from "@mui/material";
-import { Fragment, useState } from "react";
-import { createInstance } from "../repos/instances";
-import SelectTemplate from "../components/SelectTemplate";
-import ViewTemplate from "../components/ViewTemplate";
-import CreateInstance from "../components/CreateInstance";
-import { getTemplateById } from "../repos/templates";
-import { useNavigate } from "react-router";
+import { useRouter } from "next/router";
+import { useState } from "react";
+import { createInstance } from "../../repos/instances";
+import SelectTemplate from "../../components/SelectTemplate";
+import ViewTemplate from "../../components/ViewTemplate";
+import CreateInstance from "../../components/CreateInstance";
+import { getTemplateById } from "../../repos/templates";
+import { NextPage } from "next";
 
-export default function CreateTemplatePage() {
+const InstanceCreatePage: NextPage = () => {
   const [templateId, setTemplateId] = useState<string>();
   const [templateData, setTemplateData]  = useState<string>();
   const [instanceData, setInstanceData]  = useState<string>();
   const [replaceKeys, setReplaceKeys]  = useState<string[]>();
   const [replacementMapping, setReplacementMapping] = useState<Map<string, string>>(new Map<string, string>());
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const templateSelected = async (templateId: string) => {
     const data = await getTemplateById(templateId);
@@ -55,7 +56,7 @@ export default function CreateTemplatePage() {
       }));
       await createInstance(newName, items);
 
-      navigate('/instances');
+      router.push('/instances');
     }
   }
 
@@ -88,14 +89,16 @@ export default function CreateTemplatePage() {
 
   const [xsWidth, mdWidth, lgWidth] = computeLeftPanelWidth();
 
-  return(
-    <Fragment>
+  return (
+    <>
       <Grid item xs={xsWidth} md={mdWidth} lg={lgWidth}>
         {leftPanel}
       </Grid>
       <Grid item xs={12} md={6} lg={6} display={rightPanel ? undefined : 'none'}>
         {rightPanel}
       </Grid>
-    </Fragment>
-  );
-}
+    </>
+  )
+};
+
+export default InstanceCreatePage

@@ -1,7 +1,8 @@
-import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
+// TODO: Implement common layout items (navigation, etc)
+// import '@fontsource/roboto/300.css';
+// import '@fontsource/roboto/400.css';
+// import '@fontsource/roboto/500.css';
+// import '@fontsource/roboto/700.css';
 import * as React from 'react';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -17,8 +18,8 @@ import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import { NavListItems } from './components/NavListItems';
-import { Outlet } from 'react-router-dom';
+import { useRouter } from 'next/router';
+import { NavListItems } from './NavListItems';
 
 // Shamelessly based off of https://mui.com/getting-started/templates/dashboard/
 
@@ -74,11 +75,12 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 
 const mdTheme = createTheme();
 
-function App() {
+export default function Layout({ children }: { children: any}) {
   const [open, setOpen] = React.useState(false);
   const toggleDrawer = () => {
     setOpen(!open);
   };
+  const router = useRouter();
 
   return (
     <ThemeProvider theme={mdTheme}>
@@ -90,7 +92,13 @@ function App() {
             <IconButton edge="start" color="inherit" aria-label="open drawer" onClick={toggleDrawer} sx={{ marginRight: '36px', ...(open && { display: 'none' }), }}>
               <MenuIcon />
             </IconButton>
-            <Typography component="h1" variant="h6" color="inherit" noWrap sx={{ flexGrow: 1 }} >
+            <Typography
+              component="h1"
+              variant="h6"
+              color="inherit"
+              noWrap
+              sx={{ flexGrow: 1, cursor: 'pointer' }}
+              onClick={() => router.push('/')} >
               Runbook Buddy
             </Typography>
           </Toolbar>
@@ -129,7 +137,7 @@ function App() {
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Grid container spacing={3}>
               {/* Content */}
-              <Outlet />
+              {children}
             </Grid>
           </Container>
         </Box>
@@ -137,5 +145,3 @@ function App() {
     </ThemeProvider>
   );
 }
-
-export default App;

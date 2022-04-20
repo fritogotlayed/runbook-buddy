@@ -1,40 +1,37 @@
-import axios from "axios";
-import { buildUrl } from "./common";
-
 export async function searchTemplates(term: string) {
-  const data = await axios.get(buildUrl('/template'));
-  return data.data['results'];
+  const data = await fetch('/api/templates')
+    .then(res => res.json());
+  return data.results;
 }
 
 export async function getTemplateById(id: string): Promise<string> {
-  const data = await axios.get(buildUrl(`/template/${id}`));
-  return data.data;
+  const data = await fetch(`/api/templates/${id}`)
+    .then(res => res.text());
+  return data;
 }
 
 export async function removeTemplateById(id: string) {
-  await axios.delete(buildUrl(`/template/${id}`));
+  await fetch(`/api/templates/${id}`, {
+    method: 'DELETE'
+  });
 }
 
 export async function createTemplate(name: string, content: string) {
-  await axios.post(
-    buildUrl('/template'),
-    JSON.stringify({ name, content }),
-    {
-      headers: {
-        'Content-Type': 'application/json'
-      }
+  await fetch('/api/templates', {
+    method: 'POST',
+    body: JSON.stringify({ name, content }),
+    headers: {
+      'Content-Type': 'application/json'
     }
-  );
+  });
 }
 
 export async function updateTemplate(id: string, content: string) {
-  await axios.put(
-    buildUrl(`/template/${id}`),
-    JSON.stringify({ content }),
-    {
-      headers: {
-        'Content-Type': 'application/json'
-      }
+  await fetch(`/api/templates/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ content }),
+    headers: {
+      'Content-Type': 'application/json'
     }
-  );
+  });
 }

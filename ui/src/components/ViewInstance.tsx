@@ -1,47 +1,50 @@
 import { Box, Button, Checkbox, FormControlLabel, FormGroup, IconButton, Paper, Toolbar, Typography } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 
-import { useState } from "react";
 import { IInstanceItem } from "../repos/instances";
 import SearchInput from "./SearchInput";
 import { Save } from "@mui/icons-material";
+import { UIInstanceItem } from "../types/UIInstanceItem";
 
-export type SaveCallback = (instanceId: string, data: Array<IInstanceItem>) => void;
-
-interface IUIInstanceItem extends IInstanceItem { 
-  originalState: boolean,
-  visible: boolean,
-}
+export type SaveCallback = (data: Array<IInstanceItem>) => void;
+export type ItemToggledCallback = (item: UIInstanceItem) => void;
+export type SearchTermUpdatedCallback = (term: string | undefined) => void;
 
 interface IViewInstanceProps {
-  instanceId: string,
-  data: Array<IInstanceItem>,
+  instanceTitle: string,
+  data: Array<UIInstanceItem>,
   onCloseClicked: Function,
   onSaveClicked: SaveCallback,
+  onItemUpdated: ItemToggledCallback,
+  onSearchTermUpdated: SearchTermUpdatedCallback,
 };
 
 export default function ViewInstance(props: IViewInstanceProps) {
-  const { instanceId, data: inData, onCloseClicked, onSaveClicked } = props;
-
-  const [data, setData] = useState<Array<IUIInstanceItem>>(inData.map((e) => ({ ...e, originalState: e.completed, visible: true })));
-  const [isDirty, setIsDirty] = useState<boolean>(false);
+  const { instanceTitle, data, onCloseClicked, onSaveClicked, onItemUpdated, onSearchTermUpdated } = props;
 
   const toggleItemCompleted = (key: string) => {
-    const newData = data?.map((item) => {
+    data?.map((item) => {
       if (key === item.data) {
         return { ...item, completed: !item.completed}
       }
       return item;
     });
-    setData(newData);
-    setIsDirty(true);
+
+    if (onItemUpdated) {
+      const item = data.find((e) => e.data === key);
+      if (item) {
+        onItemUpdated({ ...item, completed: !item.completed})
+      }
+    }
   };
 
   const save = async () => {
-    if (instanceId && data) {
-      onSaveClicked(instanceId, data.map(e => ({data: e.data, completed: e.completed})));
+    if (data) {
+      onSaveClicked(data.map(e => ({data: e.data, completed: e.completed})));
     }
   };
+
+  const isDirty = data.map((e) => e.completed !== e.originalState).reduce((prev, curr) => prev || curr);
 
   let items;
 
@@ -64,34 +67,13 @@ export default function ViewInstance(props: IViewInstanceProps) {
     );
   }
 
-  const searchTermUpdated = (term?: string) => {
-    if (term) {
-      const isVisible = (value: string) => {
-        // NOTE: JS has weird behavior with re-using a RegExp object and the test method
-        // where checks will be a false negative. We can work around this by re-creating
-        // the RegExp object for every check.
-        const exp = new RegExp(term, 'gi');
-        return exp.test(value);
-      }
-      setData(
-        data.map((i) => ({
-          ...i,
-          visible: isVisible(i.data)
-        }))
-      );
-    } else {
-      setData(
-        data.map((i) => ({...i, visible: true}))
-      );
-    }
-  };
 
   return(
     <Paper style={{ margin: '1em' }}>
       <Box sx={{ padding: '1em' }} >
         <Toolbar>
           <Typography sx={{ ml: 2, flex: 1 }} variant='h5' component="div">
-            {instanceId?.replace(/_/g, ' ')}
+            {instanceTitle}
           </Typography>
           <IconButton
             edge="end"
@@ -103,7 +85,7 @@ export default function ViewInstance(props: IViewInstanceProps) {
           </IconButton>
         </Toolbar>
         <Box>
-          <SearchInput onSearchTermUpdated={searchTermUpdated} />
+          <SearchInput onSearchTermUpdated={onSearchTermUpdated} />
         </Box>
         {items}
         <Box>
