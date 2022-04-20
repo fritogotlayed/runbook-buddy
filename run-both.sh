@@ -18,13 +18,13 @@ then
     # Start API and UI in split view
     tmux rename-window "Runbook Buddy";
     tmux send-keys "$API_START_COMMAND" ENTER;
-    tmux split-window -h -c "$PWD/nextui";
+    tmux split-window -h -c "$PWD/ui";
     tmux send-keys "$UI_START_COMMAND" ENTER;
 else
     # Start API and UI in separate windows
     tmux rename-window "Runbook Buddy - API";
     tmux send-keys "$API_START_COMMAND" ENTER;
-    tmux new-window -c "$PWD/nextui/" -n "Runbook Buddy - UI";
+    tmux new-window -c "$PWD/ui/" -n "Runbook Buddy - UI";
     tmux send-keys "$UI_START_COMMAND" ENTER;
 fi
 
