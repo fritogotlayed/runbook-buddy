@@ -18,6 +18,7 @@ import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import { useRouter } from 'next/router';
 import { NavListItems } from './NavListItems';
 
 // Shamelessly based off of https://mui.com/getting-started/templates/dashboard/
@@ -79,6 +80,7 @@ export default function Layout({ children }: { children: any}) {
   const toggleDrawer = () => {
     setOpen(!open);
   };
+  const router = useRouter();
 
   return (
     <ThemeProvider theme={mdTheme}>
@@ -90,7 +92,13 @@ export default function Layout({ children }: { children: any}) {
             <IconButton edge="start" color="inherit" aria-label="open drawer" onClick={toggleDrawer} sx={{ marginRight: '36px', ...(open && { display: 'none' }), }}>
               <MenuIcon />
             </IconButton>
-            <Typography component="h1" variant="h6" color="inherit" noWrap sx={{ flexGrow: 1 }} >
+            <Typography
+              component="h1"
+              variant="h6"
+              color="inherit"
+              noWrap
+              sx={{ flexGrow: 1, cursor: 'pointer' }}
+              onClick={() => router.push('/')} >
               Runbook Buddy
             </Typography>
           </Toolbar>
