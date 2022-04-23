@@ -1,5 +1,11 @@
-import { open, fstat, close, read, write, unlink } from "fs";
+import { open, fstat, close, read, write, unlink, mkdir, rename } from "fs";
 import { promisify } from "util";
+
+export async function ensureDataDirectory() {
+  try {
+    await promisify(mkdir)('data');
+  } catch {}
+}
 
 export async function readFileContents(filePath: string) {
   let fileDescriptor: number = -1;
@@ -49,6 +55,15 @@ export async function writeFileContents(filePath: string, data: string, overwrit
 export async function removeFile(filePath: string) {
   try {
     await promisify(unlink)(filePath);
+  } catch (err) {
+    console.dir(err);
+    throw err;
+  }
+}
+
+export async function renameFile(filePath: string, newFilePath: string) {
+  try {
+    await promisify(rename)(filePath, newFilePath);
   } catch (err) {
     console.dir(err);
     throw err;
