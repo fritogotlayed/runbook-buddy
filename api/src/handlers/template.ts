@@ -39,7 +39,7 @@ export default function registerRoutes(server: FastifyInstance<Server, IncomingM
 
       try {
         const data = await promisify(readdir)(__dirname + '/../../data');
-        const extension = '.template';
+        const extension = '.template.json';
         return {
           results: data.filter((val) => val.endsWith(extension)).map((val) => val.substring(0, val.length - extension.length))
         };
@@ -59,7 +59,7 @@ export default function registerRoutes(server: FastifyInstance<Server, IncomingM
       const { id } = req.params;
 
       try {
-        const filePath = __dirname + '/../../data/' + id + '.template';
+        const filePath = __dirname + '/../../data/' + id + '.template.json';
         const data = await readFileContents(filePath);
         return data;
       } catch (err) {
@@ -84,7 +84,7 @@ export default function registerRoutes(server: FastifyInstance<Server, IncomingM
     async (req, resp) => {
       const { name, content } = req.body;
       try {
-        const filePath = __dirname + '/../../data/' + name + '.template';
+        const filePath = __dirname + '/../../data/' + name + '.template.json';
         await writeFileContents(filePath, content, false);
         return { name, content };
       } catch (err) {
@@ -111,7 +111,7 @@ export default function registerRoutes(server: FastifyInstance<Server, IncomingM
       const { id } = req.params;
       const { content } = req.body;
       try {
-        const filePath = __dirname + '/../../data/' + id + '.template';
+        const filePath = __dirname + '/../../data/' + id + '.template.json';
         await writeFileContents(filePath, content, true);
         return { name: id, content };
       } catch (err) {
@@ -129,7 +129,7 @@ export default function registerRoutes(server: FastifyInstance<Server, IncomingM
     async (req, resp) => {
       const { id } = req.params;
       try {
-        const filePath = __dirname + '/../../data/' + id + '.template';
+        const filePath = __dirname + '/../../data/' + id + '.template.json';
         await removeFile(filePath);
         resp.code(204);
         return;

@@ -3,6 +3,7 @@ import { Box } from "@mui/system";
 import CloseIcon from '@mui/icons-material/Close';
 import { useState } from "react";
 import { Save } from "@mui/icons-material";
+import { convertTemplateToHuman } from "utils/converters";
 
 export type UpdateCallback = (templateId: string, data: string) => void;
 
@@ -16,7 +17,7 @@ export interface EditTemplateProps {
 export default function EditTemplate(props: EditTemplateProps) {
   const { templateId, body, onUpdateButtonClick, onCloseClicked } = props;
 
-  const [data, setData] = useState<string>(body);
+  const [data, setData] = useState<string>(convertTemplateToHuman(body));
 
   const update = () => {
     if (templateId && data && onUpdateButtonClick) {

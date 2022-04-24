@@ -57,7 +57,7 @@ export default function registerRoutes(server: FastifyInstance<Server, IncomingM
 
       try {
         const data = await promisify(readdir)(__dirname + '/../../data');
-        const extension = '.instance';
+        const extension = '.instance.json';
         return {
           results: data.filter((val) => val.endsWith(extension)).map((val) => val.substring(0, val.length - extension.length))
         };
@@ -77,7 +77,7 @@ export default function registerRoutes(server: FastifyInstance<Server, IncomingM
       const { id } = req.params;
 
       try {
-        const filePath = __dirname + '/../../data/' + id + '.instance';
+        const filePath = __dirname + '/../../data/' + id + '.instance.json';
         const data = await readFileContents(filePath);
         res.type('application/json');
         return data;
@@ -103,7 +103,7 @@ export default function registerRoutes(server: FastifyInstance<Server, IncomingM
     async (req, resp) => {
       const { name, content } = req.body;
       try {
-        const filePath = __dirname + '/../../data/' + name + '.instance';
+        const filePath = __dirname + '/../../data/' + name + '.instance.json';
         await writeFileContents(filePath, JSON.stringify(content), false);
         return { name, content };
       } catch (err) {
@@ -132,7 +132,7 @@ export default function registerRoutes(server: FastifyInstance<Server, IncomingM
       try {
         console.dir(req.headers);
         console.dir(content);
-        const filePath = __dirname + '/../../data/' + id + '.instance';
+        const filePath = __dirname + '/../../data/' + id + '.instance.json';
         const sanitizedContent = content.map((e) => ({ completed: e.completed, data: e.data }));
         await writeFileContents(filePath, JSON.stringify(sanitizedContent), true);
         return { name: id, content };
@@ -151,7 +151,7 @@ export default function registerRoutes(server: FastifyInstance<Server, IncomingM
     async (req, resp) => {
       const { id } = req.params;
       try {
-        const filePath = __dirname + '/../../data/' + id + '.instance';
+        const filePath = __dirname + '/../../data/' + id + '.instance.json';
         await removeFile(filePath);
         resp.code(204);
         return;

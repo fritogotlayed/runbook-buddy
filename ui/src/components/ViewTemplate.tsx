@@ -1,5 +1,6 @@
 import { Box, IconButton, Paper, Toolbar, Typography } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
+import { convertTemplateToHuman } from "utils/converters";
 
 interface IViewTemplateProps {
   templateId: string,
@@ -12,7 +13,8 @@ export default function ViewTemplate(props: IViewTemplateProps) {
 
   let items;
   if (data) {
-    items = data.split('\n').map((line, i) => (<span key={i}>{line}<br /></span>));
+    const body = convertTemplateToHuman(data);
+    items = body.split('\n').map((line, i) => (<span key={i}>{line}<br /></span>));
   }
   return(
     <Paper style={{ margin: "1em" }}>

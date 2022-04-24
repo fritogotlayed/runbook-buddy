@@ -10,6 +10,7 @@ import CreateTemplate from 'components/CreateTemplate';
 import ViewTemplate from 'components/ViewTemplate';
 import EditTemplate from 'components/EditTemplate';
 import ListTemplates from 'components/ListTemplates';
+import { convertTemplateToJSON } from 'utils/converters';
 
 interface ITemplateData {
   key: string,
@@ -73,7 +74,9 @@ const TemplatesPage: NextPage = () => {
   }
 
   const onTemplateUpdated = async (templateId: string, body: string) => {
-    await updateTemplate(templateId, body);
+    const jsonBody = convertTemplateToJSON(body);
+    await updateTemplate(templateId, jsonBody);
+    setEditTemplateData(undefined);
   };
 
   let sidePanel: JSX.Element | undefined;
