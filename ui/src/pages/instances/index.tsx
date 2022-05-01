@@ -40,10 +40,11 @@ const InstancesPage: NextPage = () => {
 
   const viewItem = async (key: string) => {
     const data = await getInstanceById(key);
+    console.log(data);
     setEditInstanceData(undefined);
     setViewInstanceData({
       key,
-      data: data.map((e) => ({ ...e, originalState: e.completed, visible: true }))
+      data: data.contents.map((e) => ({ ...e, originalState: e.completed, visible: true }))
     });
   }
 

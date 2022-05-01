@@ -7,41 +7,63 @@ import ViewTemplate from "../../components/ViewTemplate";
 import CreateInstance from "../../components/CreateInstance";
 import { getTemplateById } from "../../repos/templates";
 import { NextPage } from "next";
+import { convertTemplateToJSON, convertTemplateToInstance } from "utils/converters";
+import { V1InstanceFile, V1InstanceItem, V1TemplateFile } from "types/v1DataFormat";
 
 const InstanceCreatePage: NextPage = () => {
   const [templateId, setTemplateId] = useState<string>();
-  const [templateData, setTemplateData]  = useState<string>();
-  const [instanceData, setInstanceData]  = useState<string>();
+  const [templateData, setTemplateData]  = useState<V1TemplateFile>();
+  const [instanceData, setInstanceData]  = useState<V1InstanceFile>();
   const [replaceKeys, setReplaceKeys]  = useState<string[]>();
   const [replacementMapping, setReplacementMapping] = useState<Map<string, string>>(new Map<string, string>());
   const router = useRouter();
 
   const templateSelected = async (templateId: string) => {
     const data = await getTemplateById(templateId);
+    const workingData = convertTemplateToInstance(data);
+    debugger;
     setTemplateId(templateId)
     setTemplateData(data);
 
-    const tester = /{{(.*?)}}/g;
     let result;
     const keys: string[] = [];
-    do {
-      result = tester.exec(data);
-      if (result && keys.indexOf(result[1]) === -1) keys.push(result[1]);
-    } while (result)
+
+    const checkDatumForTemplateKey = (datum: string) => {
+      const tester = /{{(.*?)}}/g;
+      do {
+        result = tester.exec(datum);
+        if (result && keys.indexOf(result[1]) === -1) keys.push(result[1]);
+      } while (result)
+    }
+
+    const processInstanceItem = (item: V1InstanceItem): void => {
+      checkDatumForTemplateKey(item.data);
+      item.children.forEach((e) => processInstanceItem(e));
+    };
+
+    // TODO: Validate these forEach's
+    workingData.contents.forEach((e) => processInstanceItem(e))
 
     setReplaceKeys(keys.sort((a, b) => a.localeCompare(b)));
-    let workingData = data;
     setInstanceData(workingData);
   };
 
   const templateFieldUpdated = (key: string, value: string) => {
+    debugger;
     replacementMapping.set(key, value);
     setReplacementMapping(replacementMapping)
+
+    const processInstanceItem = (item: V1InstanceItem, replaceKey: string): void => {
+      const expression = `{{${replaceKey}}}`;
+      item.data = item.data.replace(new RegExp(expression, 'g'), replacementMapping.get(replaceKey) || expression);
+      item.children.forEach((e) => processInstanceItem(e, replaceKey));
+    };
+
     if (templateData && replaceKeys) {
-      let workingData = templateData
+      let workingData = convertTemplateToInstance(templateData);
       for (let i = 0; i < replaceKeys.length; i += 1) {
-        const expression = `{{${replaceKeys[i]}}}`;
-        workingData = workingData.replace(new RegExp(expression, 'g'), replacementMapping.get(replaceKeys[i]) || expression);
+        // TODO: Validate these forEach's
+        workingData.contents.forEach((e) => processInstanceItem(e, replaceKeys[i]));
       }
       setInstanceData(workingData);
     }
@@ -50,11 +72,14 @@ const InstanceCreatePage: NextPage = () => {
   const createButtonClicked = async (name: string) => {
     if (instanceData) {
       const newName = name.replace(/ /g, '_');
-      const items = instanceData.split(/\r\n|\r|\n/g).map((line) => ({
-        data: line,
-        completed: false,
-      }));
-      await createInstance(newName, items);
+      // const items = instanceData.split(/\r\n|\r|\n/g).map((line) => ({
+      //   data: line,
+      //   completed: false,
+      // }));
+      console.log(newName);
+      console.log(instanceData);
+      // await createInstance(newName, JSON.parse(instanceData));
+      await createInstance(newName, instanceData);
 
       router.push('/instances');
     }
@@ -72,7 +97,7 @@ const InstanceCreatePage: NextPage = () => {
       <CreateInstance keys={replaceKeys} onFieldUpdated={templateFieldUpdated} onCreateButtonClick={createButtonClicked} />
     );
     rightPanel = (
-      <ViewTemplate templateId={templateId} data={instanceData || ''} />
+      <ViewTemplate templateId={templateId} data={instanceData ? JSON.stringify(instanceData) : ''} />
     )
   }
 

@@ -1,19 +1,8 @@
 import { V1TemplateFile, V1TemplateItem } from "types/v1DataFormat";
-import { DELIMITER } from './common';
+import { getDepthAndData } from "./common";
 
 type V1TemplateTreeItem = V1TemplateItem & {
   parent?: V1TemplateTreeItem
-};
-
-function getDepthAndData(line: string): [number, string] {
-  let workingData = line;
-  let depth = 0;
-  while (workingData.startsWith(DELIMITER)) {
-    workingData = workingData.slice(DELIMITER.length);
-    depth += 1;
-  }
-
-  return [depth, workingData];
 };
 
 function getProperParent(previous: V1TemplateTreeItem, depthAdjustment: number): V1TemplateTreeItem {
@@ -25,12 +14,12 @@ function getProperParent(previous: V1TemplateTreeItem, depthAdjustment: number):
 }
 
 function buildTemplateTreeItems(lineData: string, nextLines: string[], previous: V1TemplateTreeItem, parentDepth: number): void {
-  const [depth, workingData] = getDepthAndData(lineData); // ?
+  const { depth, data } = getDepthAndData(lineData);
 
   const parent = getProperParent(previous, parentDepth - depth);
 
   const currentItem:  V1TemplateTreeItem = {
-    data: workingData,
+    data,
     children: [],
     parent,
   };

@@ -44,7 +44,7 @@ export default function ViewInstance(props: IViewInstanceProps) {
     }
   };
 
-  const isDirty = data.map((e) => e.completed !== e.originalState).reduce((prev, curr) => prev || curr);
+  const isDirty = data.length === 0 ? false : data.map((e) => e.completed !== e.originalState).reduce((prev, curr) => prev || curr);
 
   let items;
 

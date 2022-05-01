@@ -1,6 +1,7 @@
 import { Box, IconButton, Paper, Toolbar, Typography } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import { convertTemplateToHuman } from "utils/converters";
+import { getDepthAndData } from "utils/converters/common";
 
 interface IViewTemplateProps {
   templateId: string,
@@ -14,7 +15,11 @@ export default function ViewTemplate(props: IViewTemplateProps) {
   let items;
   if (data) {
     const body = convertTemplateToHuman(data);
-    items = body.split('\n').map((line, i) => (<span key={i}>{line}<br /></span>));
+    items = body.split('\n').map((line, i) => {
+      const { depth, data } = getDepthAndData(line);
+      const marginLeft = `${depth * 1}em`;
+      return <span key={i} style={{marginLeft: marginLeft}} >{data}<br /></span>
+    });
   }
   return(
     <Paper style={{ margin: "1em" }}>

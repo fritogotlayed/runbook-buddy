@@ -14,12 +14,26 @@ interface IGetInstanceByIdRequestUrl {
   id: string;
 }
 
-const CreateInstanceRequestBodySchema = Type.Object({
-  name: Type.String(),
-  content: Type.Array(Type.Object({
+// TODO: Fastify tosses errors presumably because this is recursive
+// const InstanceItemSchema = Type.Rec(Self => Type.Object({
+//   completed: Type.Boolean(),
+//   data: Type.String(),
+//   children: Type.Array(Self),
+// }), { $id: 'Item' });
+
+const InstanceTopLevel = Type.Object({
+  version: Type.Number(),
+  // contents: Type.Array(InstanceItemSchema),
+  contents: Type.Array(Type.Object({
     completed: Type.Boolean(),
     data: Type.String(),
+    children: Type.Array(Type.Any()),
   })),
+})
+
+const CreateInstanceRequestBodySchema = Type.Object({
+  name: Type.String(),
+  content: InstanceTopLevel,
 });
 type CreateInstanceRequestBody = Static<typeof CreateInstanceRequestBodySchema>;
 
