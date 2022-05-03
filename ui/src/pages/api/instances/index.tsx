@@ -12,7 +12,6 @@ export default async function handler(
       res.status(200).json(data)
       break;
     case 'POST':
-      console.log(req.body)
       const resp = await fetch('http://localhost:8080/instance', {
         method: 'POST',
         body: JSON.stringify(req.body),

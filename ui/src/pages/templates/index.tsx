@@ -5,16 +5,16 @@ import { Grid } from "@mui/material";
 import { useEffect, useState } from "react";
 import { createTemplate, getTemplateById, removeTemplateById, searchTemplates, updateTemplate } from "../../repos/templates";
 
-import ViewInstance from "../../components/ViewInstance";
 import CreateTemplate from 'components/CreateTemplate';
 import ViewTemplate from 'components/ViewTemplate';
 import EditTemplate from 'components/EditTemplate';
 import ListTemplates from 'components/ListTemplates';
 import { convertTemplateToJSON } from 'utils/converters';
+import { V1TemplateFile } from 'types/v1DataFormat';
 
 interface ITemplateData {
   key: string,
-  data: string
+  data: V1TemplateFile
 }
 
 const TemplatesPage: NextPage = () => {

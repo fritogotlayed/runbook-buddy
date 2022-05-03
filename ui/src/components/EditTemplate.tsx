@@ -4,12 +4,13 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useState } from "react";
 import { Save } from "@mui/icons-material";
 import { convertTemplateToHuman } from "utils/converters";
+import { V1TemplateFile } from "types/v1DataFormat";
 
 export type UpdateCallback = (templateId: string, data: string) => void;
 
 export interface EditTemplateProps {
   templateId: string,
-  body: string,
+  body: V1TemplateFile,
   onUpdateButtonClick: UpdateCallback,
   onCloseClicked: Function,
 }

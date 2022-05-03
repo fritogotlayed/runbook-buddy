@@ -12,7 +12,6 @@ function itemToString(element: V1TemplateItem, depth: number = 0): string {
   return `${prefix}${element.data}`;
 }
 
-export function convertTemplateToHuman(input: string): string {
-  const fileData = JSON.parse(input) as V1TemplateFile;
-  return fileData.contents.map((e) => itemToString(e)).join('\n');
+export function convertTemplateToHuman(input: V1TemplateFile): string {
+  return input.contents.map((e) => itemToString(e)).join('\n');
 }

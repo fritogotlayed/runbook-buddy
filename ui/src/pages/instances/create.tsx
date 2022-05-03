@@ -21,7 +21,6 @@ const InstanceCreatePage: NextPage = () => {
   const templateSelected = async (templateId: string) => {
     const data = await getTemplateById(templateId);
     const workingData = convertTemplateToInstance(data);
-    debugger;
     setTemplateId(templateId)
     setTemplateData(data);
 
@@ -49,7 +48,6 @@ const InstanceCreatePage: NextPage = () => {
   };
 
   const templateFieldUpdated = (key: string, value: string) => {
-    debugger;
     replacementMapping.set(key, value);
     setReplacementMapping(replacementMapping)
 
@@ -72,13 +70,6 @@ const InstanceCreatePage: NextPage = () => {
   const createButtonClicked = async (name: string) => {
     if (instanceData) {
       const newName = name.replace(/ /g, '_');
-      // const items = instanceData.split(/\r\n|\r|\n/g).map((line) => ({
-      //   data: line,
-      //   completed: false,
-      // }));
-      console.log(newName);
-      console.log(instanceData);
-      // await createInstance(newName, JSON.parse(instanceData));
       await createInstance(newName, instanceData);
 
       router.push('/instances');
@@ -97,7 +88,7 @@ const InstanceCreatePage: NextPage = () => {
       <CreateInstance keys={replaceKeys} onFieldUpdated={templateFieldUpdated} onCreateButtonClick={createButtonClicked} />
     );
     rightPanel = (
-      <ViewTemplate templateId={templateId} data={instanceData ? JSON.stringify(instanceData) : ''} />
+      <ViewTemplate templateId={templateId} data={instanceData} />
     )
   }
 

@@ -42,9 +42,16 @@ interface IPutInstanceRequestUrl {
 }
 
 const PutInstanceRequestBodySchema = Type.Object({
-  content: Type.Array(Type.Object({
+  // content: Type.Array(Type.Object({
+  //   completed: Type.Boolean(),
+  //   data: Type.String(),
+  // })),
+  version: Type.Number(),
+  // contents: Type.Array(InstanceItemSchema),
+  contents: Type.Array(Type.Object({
     completed: Type.Boolean(),
     data: Type.String(),
+    children: Type.Array(Type.Any()),
   })),
 });
 type PutInstanceRequestBody = Static<typeof PutInstanceRequestBodySchema>;
@@ -142,14 +149,24 @@ export default function registerRoutes(server: FastifyInstance<Server, IncomingM
     },
     async (req, resp) => {
       const { id } = req.params;
-      const { content } = req.body;
+      const { version, contents } = req.body;
       try {
         console.dir(req.headers);
-        console.dir(content);
+        console.dir({ version, contents });
+
+        const sanitizeMapItem = (item: any) => {
+          const children = item.children.map((e: any) => sanitizeMapItem(e));
+          return {
+            completed: item.completed,
+            data: item.data,
+            children,
+          };
+        };
+
         const filePath = __dirname + '/../../data/' + id + '.instance.json';
-        const sanitizedContent = content.map((e) => ({ completed: e.completed, data: e.data }));
-        await writeFileContents(filePath, JSON.stringify(sanitizedContent), true);
-        return { name: id, content };
+        const sanitizedContent = contents.map((e) => sanitizeMapItem(e));
+        await writeFileContents(filePath, JSON.stringify({version, contents: sanitizedContent}), true);
+        return { name: id, content: { version, contents } };
       } catch (err) {
         console.dir(err);
         return { status: 500, message: 'Something went wrong!' };

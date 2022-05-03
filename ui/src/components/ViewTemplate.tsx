@@ -2,10 +2,11 @@ import { Box, IconButton, Paper, Toolbar, Typography } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import { convertTemplateToHuman } from "utils/converters";
 import { getDepthAndData } from "utils/converters/common";
+import { V1TemplateFile } from "types/v1DataFormat";
 
 interface IViewTemplateProps {
   templateId: string,
-  data: string,
+  data: V1TemplateFile | undefined,
   onCloseClicked?: Function,
 };
 
