@@ -26,7 +26,7 @@ export type V1UIInstanceItem = V1InstanceItem & {
   childrenComplete: number;
   children: V1UIInstanceItem[];
   parent: V1UIInstanceItem | undefined;
-}
+};
 
 export type V1UIInstanceFile = {
   version: number;

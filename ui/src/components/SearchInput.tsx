@@ -1,13 +1,20 @@
-import { Search, SearchOff } from "@mui/icons-material";
-import { ButtonGroup, FormControl, IconButton, Input, InputAdornment, InputLabel } from "@mui/material";
-import { useState } from "react";
+import { Search, SearchOff } from '@mui/icons-material';
+import {
+  ButtonGroup,
+  FormControl,
+  IconButton,
+  Input,
+  InputAdornment,
+  InputLabel,
+} from '@mui/material';
+import { useState } from 'react';
 
 export type SearchCallback = (term?: string) => void;
 
 interface ISearchInputProps {
-  showClearButton?: boolean,
-  onSearchTermUpdated?: SearchCallback,
-};
+  showClearButton?: boolean;
+  onSearchTermUpdated?: SearchCallback;
+}
 
 export default function SearchInput(props: ISearchInputProps) {
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -24,9 +31,9 @@ export default function SearchInput(props: ISearchInputProps) {
       props.onSearchTermUpdated(searchTerm);
     }
   };
-  
+
   return (
-    <FormControl sx={{ m: 1 }} variant="outlined" fullWidth >
+    <FormControl sx={{ m: 1 }} variant="outlined" fullWidth>
       <InputLabel htmlFor="outlined-adornment-password">Search</InputLabel>
       <Input
         id="outlined-adornment-password"
@@ -40,7 +47,7 @@ export default function SearchInput(props: ISearchInputProps) {
               <IconButton edge="end" onClick={() => searchKeyDown('Enter')}>
                 <Search />
               </IconButton>
-              {props.showClearButton || true ? (
+              {props.showClearButton ? (
                 <IconButton edge="end" onClick={clearSearch}>
                   <SearchOff />
                 </IconButton>

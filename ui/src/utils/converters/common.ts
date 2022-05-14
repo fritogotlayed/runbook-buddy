@@ -14,4 +14,4 @@ export function getDepthAndData(line: string): DepthAndData {
   }
 
   return { depth, data: workingData };
-};
+}

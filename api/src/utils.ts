@@ -1,14 +1,16 @@
-import { open, fstat, close, read, write, unlink, mkdir, rename } from "fs";
-import { promisify } from "util";
+import { open, fstat, close, read, write, unlink, mkdir, rename } from 'fs';
+import { promisify } from 'util';
 
 export async function ensureDataDirectory() {
   try {
     await promisify(mkdir)('data');
-  } catch {}
+  } catch {
+    // Ignore
+  }
 }
 
 export async function readFileContents(filePath: string) {
-  let fileDescriptor: number = -1;
+  let fileDescriptor = -1;
   try {
     fileDescriptor = await promisify(open)(filePath, 'r');
     const stats = await promisify(fstat)(fileDescriptor);
@@ -19,10 +21,16 @@ export async function readFileContents(filePath: string) {
     let chunkSize = 512;
 
     while (bytesRead < bufferSize) {
-      if ((bytesRead + chunkSize) > bufferSize) {
-        chunkSize = (bufferSize - bytesRead);
+      if (bytesRead + chunkSize > bufferSize) {
+        chunkSize = bufferSize - bytesRead;
       }
-      await promisify(read)(fileDescriptor, buffer, bytesRead, chunkSize, bytesRead);
+      await promisify(read)(
+        fileDescriptor,
+        buffer,
+        bytesRead,
+        chunkSize,
+        bytesRead,
+      );
       bytesRead += chunkSize;
     }
     const data = buffer.toString('utf8', 0, bufferSize);
@@ -37,8 +45,12 @@ export async function readFileContents(filePath: string) {
   }
 }
 
-export async function writeFileContents(filePath: string, data: string, overwrite: boolean = false) {
-  let fileDescriptor: number = -1;
+export async function writeFileContents(
+  filePath: string,
+  data: string,
+  overwrite = false,
+) {
+  let fileDescriptor = -1;
   try {
     fileDescriptor = await promisify(open)(filePath, overwrite ? 'w' : 'wx');
     await promisify(write)(fileDescriptor, data);

@@ -1,6 +1,6 @@
-import { Paper, Box, Typography } from '@mui/material'
-import type { NextPage } from 'next'
-import Head from 'next/head'
+import { Paper, Box, Typography } from '@mui/material';
+import type { NextPage } from 'next';
+import Head from 'next/head';
 
 const Home: NextPage = () => {
   return (
@@ -11,17 +11,14 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Paper style={{ margin: "1em", width: "100%" }}>
-        <Box sx={{ padding: "1em"}}>
-          <Typography variant='h5'>
-            Run Book Buddy
-          </Typography>
-
+      <Paper style={{ margin: '1em', width: '100%' }}>
+        <Box sx={{ padding: '1em' }}>
+          <Typography variant="h5">Run Book Buddy</Typography>
           Welcome to your one stop shop for templated run books!
         </Box>
       </Paper>
     </>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;

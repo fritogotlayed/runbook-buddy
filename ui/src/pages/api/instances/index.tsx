@@ -1,29 +1,48 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import type { NextApiRequest, NextApiResponse } from 'next'
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { FetchOptions, RequestMethodError } from '../common';
+
+function getFetchOptions(req: NextApiRequest): FetchOptions {
+  switch (req.method) {
+    case 'GET':
+      return {
+        info: 'http://localhost:8080/instance',
+        init: undefined,
+      };
+    case 'POST':
+      return {
+        info: 'http://localhost:8080/instance',
+        init: {
+          method: 'POST',
+          body: JSON.stringify(req.body),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      };
+    default:
+      throw new RequestMethodError(
+        `Method ${req.method || 'N/A'} Not Allowed`,
+        undefined,
+        ['GET', 'POST'],
+      );
+  }
+}
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<any>
+  res: NextApiResponse,
 ) {
-  switch (req.method) {
-    case 'GET':
-      const data = await fetch('http://localhost:8080/instance')
-        .then(res => res.json());
-      res.status(200).json(data)
-      break;
-    case 'POST':
-      const resp = await fetch('http://localhost:8080/instance', {
-        method: 'POST',
-        body: JSON.stringify(req.body),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      res.status(resp.status).send(resp.body);
-      break;
-    default:
-      res.setHeader('Allow', ['GET', 'POST'])
-      res.status(405).end(`Method ${req.method} Not Allowed`)
-      break;
+  try {
+    const options = getFetchOptions(req);
+    const resp = await fetch(options.info, options.init);
+    res.status(resp.status).send(resp.body);
+  } catch (err: unknown) {
+    if (err instanceof RequestMethodError) {
+      res.setHeader('Allow', err.methods);
+      res.status(405).end(err.message);
+    } else {
+      throw err;
+    }
   }
 }

@@ -1,19 +1,21 @@
-import fastify from "fastify";
-import fastifyCors from "fastify-cors";
+/* eslint-disable @typescript-eslint/no-misused-promises */
+/* eslint-disable @typescript-eslint/no-floating-promises */
+import fastify from 'fastify';
+import fastifyCors from 'fastify-cors';
 
-import registerTemplateRoutes from "./handlers/template";
-import registerInstanceRoutes from "./handlers/instance";
-import { ensureDataDirectory } from "./utils";
-import { updateDataFiles } from "./dataConverter";
+import registerTemplateRoutes from './handlers/template';
+import registerInstanceRoutes from './handlers/instance';
+import { ensureDataDirectory } from './utils';
+import { updateDataFiles } from './dataConverter';
 
 const server = fastify({ logger: { level: 'trace' } });
 
 server.get('/health', async (req, resp) => {
-  return 'active\n';
+  await resp.send('active\n');
 });
 
 // TODO: Only allow CORS for development
-server.register(fastifyCors)
+server.register(fastifyCors);
 
 server.register(registerTemplateRoutes, { prefix: '/template' });
 server.register(registerInstanceRoutes, { prefix: '/instance' });

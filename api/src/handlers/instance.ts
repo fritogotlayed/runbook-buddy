@@ -1,35 +1,31 @@
-import { FastifyInstance, FastifyLoggerInstance, FastifyPluginOptions } from "fastify";
-import { IncomingMessage, Server, ServerResponse } from "http";
-import { readdir } from "fs";
-import { promisify } from "util";
-import { Static, Type } from "@sinclair/typebox";
-import { readFileContents, removeFile, writeFileContents } from "../utils";
-
-interface IInstanceLineItem {
-  completed: boolean;
-  data: string;
-}
+import {
+  FastifyInstance,
+  FastifyLoggerInstance,
+  FastifyPluginOptions,
+} from 'fastify';
+import { IncomingMessage, Server, ServerResponse } from 'http';
+import { readdir } from 'fs';
+import { promisify } from 'util';
+import { Static, Type } from '@sinclair/typebox';
+import { readFileContents, removeFile, writeFileContents } from '../utils';
+import { InstanceItem } from '../schemas/InstanceItem';
 
 interface IGetInstanceByIdRequestUrl {
   id: string;
 }
 
 // TODO: Fastify tosses errors presumably because this is recursive
-// const InstanceItemSchema = Type.Rec(Self => Type.Object({
-//   completed: Type.Boolean(),
-//   data: Type.String(),
-//   children: Type.Array(Self),
-// }), { $id: 'Item' });
-
 const InstanceTopLevel = Type.Object({
   version: Type.Number(),
   // contents: Type.Array(InstanceItemSchema),
-  contents: Type.Array(Type.Object({
-    completed: Type.Boolean(),
-    data: Type.String(),
-    children: Type.Array(Type.Any()),
-  })),
-})
+  contents: Type.Array(
+    Type.Object({
+      completed: Type.Boolean(),
+      data: Type.String(),
+      children: Type.Array(Type.Any()),
+    }),
+  ),
+});
 
 const CreateInstanceRequestBodySchema = Type.Object({
   name: Type.String(),
@@ -48,11 +44,13 @@ const PutInstanceRequestBodySchema = Type.Object({
   // })),
   version: Type.Number(),
   // contents: Type.Array(InstanceItemSchema),
-  contents: Type.Array(Type.Object({
-    completed: Type.Boolean(),
-    data: Type.String(),
-    children: Type.Array(Type.Any()),
-  })),
+  contents: Type.Array(
+    Type.Object({
+      completed: Type.Boolean(),
+      data: Type.String(),
+      children: Type.Array(Type.Any()),
+    }),
+  ),
 });
 type PutInstanceRequestBody = Static<typeof PutInstanceRequestBodySchema>;
 
@@ -60,92 +58,88 @@ interface IDeleteInstanceRequestUrl {
   id: string;
 }
 
-export default function registerRoutes(server: FastifyInstance<Server, IncomingMessage, ServerResponse, FastifyLoggerInstance>, opts: FastifyPluginOptions, done: Function) {
+type DoneCallback = () => void;
 
-  /* TODO: Sample for header check hook
-  server.addHook('preHandler', (req, res, done) => {
-    req.log.info('IN HOOK');
-    done();
-  });
-  */
+export default function registerRoutes(
+  server: FastifyInstance<
+    Server,
+    IncomingMessage,
+    ServerResponse,
+    FastifyLoggerInstance
+  >,
+  opts: FastifyPluginOptions,
+  done: DoneCallback,
+) {
+  server.get('/', {}, async () => {
+    // TODO: make configuration based
+    // TODO: Implement pagination and search api
 
-  server.get<{}>(
-    '/',
-    {},
-    async () => {
-      // TODO: make configuration based
-      // TODO: Implement pagination and search api
-
-      try {
-        const data = await promisify(readdir)(__dirname + '/../../data');
-        const extension = '.instance.json';
-        return {
-          results: data.filter((val) => val.endsWith(extension)).map((val) => val.substring(0, val.length - extension.length))
-        };
-      } catch (err) {
-        console.dir(err);
-        throw err;
-      }
+    try {
+      const data = await promisify(readdir)(__dirname + '/../../data');
+      const extension = '.instance.json';
+      return {
+        results: data
+          .filter((val) => val.endsWith(extension))
+          .map((val) => val.substring(0, val.length - extension.length)),
+      };
+    } catch (err) {
+      console.dir(err);
+      throw err;
     }
-  );
+  });
 
   server.get<{
-    Params: IGetInstanceByIdRequestUrl
-  }>(
-    '/:id',
-    {},
-    async (req, res) => {
-      const { id } = req.params;
+    Params: IGetInstanceByIdRequestUrl;
+  }>('/:id', {}, async (req, res) => {
+    const { id } = req.params;
 
-      try {
-        const filePath = __dirname + '/../../data/' + id + '.instance.json';
-        const data = await readFileContents(filePath);
-        res.type('application/json');
-        return data;
-      } catch (err) {
-        console.dir(err);
-        return { status: 404, message: 'Not Found' };
-      }
+    try {
+      const filePath = __dirname + '/../../data/' + id + '.instance.json';
+      const data = await readFileContents(filePath);
+      await res.type('application/json').send(data);
+    } catch (err) {
+      console.dir(err);
+      return { status: 404, message: 'Not Found' };
     }
-  )
+  });
 
   server.post<{
-    Body: CreateInstanceRequestBody
+    Body: CreateInstanceRequestBody;
   }>(
     '/',
     {
       schema: {
         body: CreateInstanceRequestBodySchema,
         response: {
-          200: CreateInstanceRequestBodySchema
-        }
-      }
+          200: CreateInstanceRequestBodySchema,
+        },
+      },
     },
     async (req, resp) => {
       const { name, content } = req.body;
       try {
         const filePath = __dirname + '/../../data/' + name + '.instance.json';
         await writeFileContents(filePath, JSON.stringify(content), false);
-        return { name, content };
+        await resp.send({ name, content });
       } catch (err) {
         console.dir(err);
         return { status: 500, message: 'Something went wrong!' };
       }
-    }
-  )
+    },
+  );
 
   server.put<{
-    Body: PutInstanceRequestBody
-    Params: IPutInstanceRequestUrl
+    Body: PutInstanceRequestBody;
+    Params: IPutInstanceRequestUrl;
   }>(
     '/:id',
     {
       schema: {
         body: PutInstanceRequestBodySchema,
         response: {
-          200: CreateInstanceRequestBodySchema
-        }
-      }
+          200: CreateInstanceRequestBodySchema,
+        },
+      },
     },
     async (req, resp) => {
       const { id } = req.params;
@@ -154,8 +148,10 @@ export default function registerRoutes(server: FastifyInstance<Server, IncomingM
         console.dir(req.headers);
         console.dir({ version, contents });
 
-        const sanitizeMapItem = (item: any) => {
-          const children = item.children.map((e: any) => sanitizeMapItem(e));
+        const sanitizeMapItem = (item: InstanceItem): InstanceItem => {
+          const children = item.children.map((e: InstanceItem) =>
+            sanitizeMapItem(e),
+          );
           return {
             completed: item.completed,
             data: item.data,
@@ -165,33 +161,32 @@ export default function registerRoutes(server: FastifyInstance<Server, IncomingM
 
         const filePath = __dirname + '/../../data/' + id + '.instance.json';
         const sanitizedContent = contents.map((e) => sanitizeMapItem(e));
-        await writeFileContents(filePath, JSON.stringify({version, contents: sanitizedContent}), true);
-        return { name: id, content: { version, contents } };
+        await writeFileContents(
+          filePath,
+          JSON.stringify({ version, contents: sanitizedContent }),
+          true,
+        );
+        await resp.send({ name: id, content: { version, contents } });
       } catch (err) {
         console.dir(err);
-        return { status: 500, message: 'Something went wrong!' };
+        await resp.status(500).send('Something went wrong!');
       }
-    }
-  )
+    },
+  );
 
   server.delete<{
-    Params: IDeleteInstanceRequestUrl
-  }>(
-    '/:id',
-    {},
-    async (req, resp) => {
-      const { id } = req.params;
-      try {
-        const filePath = __dirname + '/../../data/' + id + '.instance.json';
-        await removeFile(filePath);
-        resp.code(204);
-        return;
-      } catch (err) {
-        console.dir(err);
-        return { status: 500, message: 'Something went wrong!' };
-      }
+    Params: IDeleteInstanceRequestUrl;
+  }>('/:id', {}, async (req, resp) => {
+    const { id } = req.params;
+    try {
+      const filePath = __dirname + '/../../data/' + id + '.instance.json';
+      await removeFile(filePath);
+      await resp.code(204).send();
+    } catch (err) {
+      console.dir(err);
+      await resp.status(500).send('Something went wrong!');
     }
-  )
+  });
 
   done();
-};
+}

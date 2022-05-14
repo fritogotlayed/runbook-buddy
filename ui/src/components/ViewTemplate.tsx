@@ -1,14 +1,16 @@
-import { Box, IconButton, Paper, Toolbar, Typography } from "@mui/material";
+import { Box, IconButton, Paper, Toolbar, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { convertTemplateToHuman } from "utils/converters";
-import { getDepthAndData } from "utils/converters/common";
-import { V1TemplateFile } from "types/v1DataFormat";
+import { convertTemplateToHuman } from 'utils/converters';
+import { getDepthAndData } from 'utils/converters/common';
+import { V1TemplateFile } from 'types/v1DataFormat';
+
+export type CloseCallback = () => Promise<void> | void;
 
 interface IViewTemplateProps {
-  templateId: string,
-  data: V1TemplateFile | undefined,
-  onCloseClicked?: Function,
-};
+  templateId: string;
+  data: V1TemplateFile | undefined;
+  onCloseClicked?: CloseCallback;
+}
 
 export default function ViewTemplate(props: IViewTemplateProps) {
   const { templateId, data, onCloseClicked } = props;
@@ -19,12 +21,17 @@ export default function ViewTemplate(props: IViewTemplateProps) {
     items = body.split('\n').map((line, i) => {
       const { depth, data } = getDepthAndData(line);
       const marginLeft = `${depth * 1}em`;
-      return <span key={i} style={{marginLeft: marginLeft}} >{data}<br /></span>
+      return (
+        <span key={i} style={{ marginLeft: marginLeft }}>
+          {data}
+          <br />
+        </span>
+      );
     });
   }
-  return(
-    <Paper style={{ margin: "1em" }}>
-      <Box sx={{ padding: "1em"}}>
+  return (
+    <Paper style={{ margin: '1em' }}>
+      <Box sx={{ padding: '1em' }}>
         <Toolbar>
           <Typography sx={{ ml: 2, flex: 1 }} variant="h5" component="div">
             {templateId.replace(/_/g, ' ')}
@@ -32,7 +39,7 @@ export default function ViewTemplate(props: IViewTemplateProps) {
           <IconButton
             edge="end"
             color="inherit"
-            onClick={() => onCloseClicked && onCloseClicked()}
+            onClick={() => onCloseClicked && void onCloseClicked()}
             aria-label="close"
           >
             <CloseIcon />

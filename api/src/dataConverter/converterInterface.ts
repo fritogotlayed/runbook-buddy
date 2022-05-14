@@ -4,7 +4,7 @@ export type ConverterResult = {
   updatedSourceFileName: string;
   updatedDestinationFileName: string;
   destinationFileBody: string;
-}
+};
 
 export interface Converter {
   /**
