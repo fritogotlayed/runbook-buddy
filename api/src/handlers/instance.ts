@@ -1,166 +1,152 @@
-import { FastifyInstance, FastifyLoggerInstance, FastifyPluginOptions } from "fastify";
-import { IncomingMessage, Server, ServerResponse } from "http";
-import { readdir } from "fs";
-import { promisify } from "util";
-import { Static, Type } from "@sinclair/typebox";
-import { readFileContents, removeFile, writeFileContents } from "../utils";
+import {
+  FastifyInstance,
+  FastifyLoggerInstance,
+  FastifyPluginOptions,
+} from 'fastify';
+import { IncomingMessage, Server, ServerResponse } from 'http';
+import { readdir } from 'fs';
+import { promisify } from 'util';
+import { readFileContents, removeFile, writeFileContents } from '../utils';
+import {
+  InstanceItem,
+  IGetInstanceByIdRequestUrlParams,
+  CreateInstanceRequestBody,
+  CreateInstanceRequestBodySchema,
+  PutInstanceRequestBody,
+  PutInstanceRequestBodySchema,
+  IPutInstanceRequestUrl,
+  IDeleteInstanceRequestUrl,
+} from '../schemas';
 
-interface IInstanceLineItem {
-  completed: boolean;
-  data: string;
-}
+type DoneCallback = () => void;
 
-interface IGetInstanceByIdRequestUrl {
-  id: string;
-}
+export default function registerRoutes(
+  server: FastifyInstance<
+    Server,
+    IncomingMessage,
+    ServerResponse,
+    FastifyLoggerInstance
+  >,
+  opts: FastifyPluginOptions,
+  done: DoneCallback,
+) {
+  server.get('/', {}, async () => {
+    // TODO: make configuration based
+    // TODO: Implement pagination and search api
 
-const CreateInstanceRequestBodySchema = Type.Object({
-  name: Type.String(),
-  content: Type.Array(Type.Object({
-    completed: Type.Boolean(),
-    data: Type.String(),
-  })),
-});
-type CreateInstanceRequestBody = Static<typeof CreateInstanceRequestBodySchema>;
-
-interface IPutInstanceRequestUrl {
-  id: string;
-}
-
-const PutInstanceRequestBodySchema = Type.Object({
-  content: Type.Array(Type.Object({
-    completed: Type.Boolean(),
-    data: Type.String(),
-  })),
-});
-type PutInstanceRequestBody = Static<typeof PutInstanceRequestBodySchema>;
-
-interface IDeleteInstanceRequestUrl {
-  id: string;
-}
-
-export default function registerRoutes(server: FastifyInstance<Server, IncomingMessage, ServerResponse, FastifyLoggerInstance>, opts: FastifyPluginOptions, done: Function) {
-
-  /* TODO: Sample for header check hook
-  server.addHook('preHandler', (req, res, done) => {
-    req.log.info('IN HOOK');
-    done();
-  });
-  */
-
-  server.get<{}>(
-    '/',
-    {},
-    async () => {
-      // TODO: make configuration based
-      // TODO: Implement pagination and search api
-
-      try {
-        const data = await promisify(readdir)(__dirname + '/../../data');
-        const extension = '.instance';
-        return {
-          results: data.filter((val) => val.endsWith(extension)).map((val) => val.substring(0, val.length - extension.length))
-        };
-      } catch (err) {
-        console.dir(err);
-        throw err;
-      }
+    try {
+      const data = await promisify(readdir)(__dirname + '/../../data');
+      const extension = '.instance.json';
+      return {
+        results: data
+          .filter((val) => val.endsWith(extension))
+          .map((val) => val.substring(0, val.length - extension.length)),
+      };
+    } catch (err) {
+      console.dir(err);
+      throw err;
     }
-  );
+  });
 
   server.get<{
-    Params: IGetInstanceByIdRequestUrl
-  }>(
-    '/:id',
-    {},
-    async (req, res) => {
-      const { id } = req.params;
+    Params: IGetInstanceByIdRequestUrlParams;
+  }>('/:id', {}, async (req, res) => {
+    const { id } = req.params;
 
-      try {
-        const filePath = __dirname + '/../../data/' + id + '.instance';
-        const data = await readFileContents(filePath);
-        res.type('application/json');
-        return data;
-      } catch (err) {
-        console.dir(err);
-        return { status: 404, message: 'Not Found' };
-      }
+    try {
+      const filePath = __dirname + '/../../data/' + id + '.instance.json';
+      const data = await readFileContents(filePath);
+      await res.type('application/json').send(data);
+    } catch (err) {
+      console.dir(err);
+      return { status: 404, message: 'Not Found' };
     }
-  )
+  });
 
   server.post<{
-    Body: CreateInstanceRequestBody
+    Body: CreateInstanceRequestBody;
   }>(
     '/',
     {
       schema: {
         body: CreateInstanceRequestBodySchema,
         response: {
-          200: CreateInstanceRequestBodySchema
-        }
-      }
+          200: CreateInstanceRequestBodySchema,
+        },
+      },
     },
     async (req, resp) => {
       const { name, content } = req.body;
       try {
-        const filePath = __dirname + '/../../data/' + name + '.instance';
+        const filePath = __dirname + '/../../data/' + name + '.instance.json';
         await writeFileContents(filePath, JSON.stringify(content), false);
-        return { name, content };
+        await resp.send({ name, content });
       } catch (err) {
         console.dir(err);
         return { status: 500, message: 'Something went wrong!' };
       }
-    }
-  )
+    },
+  );
 
   server.put<{
-    Body: PutInstanceRequestBody
-    Params: IPutInstanceRequestUrl
+    Body: PutInstanceRequestBody;
+    Params: IPutInstanceRequestUrl;
   }>(
     '/:id',
     {
       schema: {
         body: PutInstanceRequestBodySchema,
         response: {
-          200: CreateInstanceRequestBodySchema
-        }
-      }
+          200: CreateInstanceRequestBodySchema,
+        },
+      },
     },
     async (req, resp) => {
       const { id } = req.params;
-      const { content } = req.body;
+      const { version, contents } = req.body;
       try {
         console.dir(req.headers);
-        console.dir(content);
-        const filePath = __dirname + '/../../data/' + id + '.instance';
-        const sanitizedContent = content.map((e) => ({ completed: e.completed, data: e.data }));
-        await writeFileContents(filePath, JSON.stringify(sanitizedContent), true);
-        return { name: id, content };
+        console.dir({ version, contents });
+
+        const sanitizeMapItem = (item: InstanceItem): InstanceItem => {
+          const children = item.children.map((e: InstanceItem) =>
+            sanitizeMapItem(e),
+          );
+          return {
+            completed: item.completed,
+            data: item.data,
+            children,
+          };
+        };
+
+        const filePath = __dirname + '/../../data/' + id + '.instance.json';
+        const sanitizedContent = contents.map((e) => sanitizeMapItem(e));
+        await writeFileContents(
+          filePath,
+          JSON.stringify({ version, contents: sanitizedContent }),
+          true,
+        );
+        await resp.send({ name: id, content: { version, contents } });
       } catch (err) {
         console.dir(err);
-        return { status: 500, message: 'Something went wrong!' };
+        await resp.status(500).send('Something went wrong!');
       }
-    }
-  )
+    },
+  );
 
   server.delete<{
-    Params: IDeleteInstanceRequestUrl
-  }>(
-    '/:id',
-    {},
-    async (req, resp) => {
-      const { id } = req.params;
-      try {
-        const filePath = __dirname + '/../../data/' + id + '.instance';
-        await removeFile(filePath);
-        resp.code(204);
-        return;
-      } catch (err) {
-        console.dir(err);
-        return { status: 500, message: 'Something went wrong!' };
-      }
+    Params: IDeleteInstanceRequestUrl;
+  }>('/:id', {}, async (req, resp) => {
+    const { id } = req.params;
+    try {
+      const filePath = __dirname + '/../../data/' + id + '.instance.json';
+      await removeFile(filePath);
+      await resp.code(204).send();
+    } catch (err) {
+      console.dir(err);
+      await resp.status(500).send('Something went wrong!');
     }
-  )
+  });
 
   done();
-};
+}

@@ -1,144 +1,132 @@
-import { FastifyInstance, FastifyLoggerInstance, FastifyPluginOptions } from "fastify";
-import { IncomingMessage, Server, ServerResponse } from "http";
-import { readdir } from "fs";
-import { promisify } from "util";
-import { Type, Static } from "@sinclair/typebox";
-import { readFileContents, removeFile, writeFileContents } from "../utils";
+import {
+  FastifyInstance,
+  FastifyLoggerInstance,
+  FastifyPluginOptions,
+} from 'fastify';
+import { IncomingMessage, Server, ServerResponse } from 'http';
+import { readdir } from 'fs';
+import { promisify } from 'util';
+import { readFileContents, removeFile, writeFileContents } from '../utils';
+import {
+  CreateTemplateRequestBody,
+  CreateTemplateRequestBodySchema,
+  IDeleteTemplateRequestUrl,
+  IGetTemplateByIdRequestUrl,
+  IPutTemplateRequestUrl,
+  PutTemplateRequestBody,
+  PutTemplateRequestBodySchema,
+} from '../schemas';
 
-interface IGetTemplateByIdRequestUrl {
-  id: string;
-}
+type DoneCallback = () => void;
 
-const CreateTemplateRequestBodySchema = Type.Object({
-  name: Type.String(),
-  content: Type.String(),
-});
-type CreateTemplateRequestBody = Static<typeof CreateTemplateRequestBodySchema>;
+export default function registerRoutes(
+  server: FastifyInstance<
+    Server,
+    IncomingMessage,
+    ServerResponse,
+    FastifyLoggerInstance
+  >,
+  opts: FastifyPluginOptions,
+  done: DoneCallback,
+) {
+  server.get('/', {}, async () => {
+    // TODO: make configuration based
+    // TODO: Implement pagination and search api
 
-interface IPutTemplateRequestUrl {
-  id: string;
-}
-
-const PutTemplateRequestBodySchema = Type.Object({
-  content: Type.String(),
-});
-type PutTemplateRequestBody = Static<typeof PutTemplateRequestBodySchema>;
-
-interface IDeleteTemplateRequestUrl {
-  id: string;
-}
-
-export default function registerRoutes(server: FastifyInstance<Server, IncomingMessage, ServerResponse, FastifyLoggerInstance>, opts: FastifyPluginOptions, done: Function) {
-
-  server.get<{}>(
-    '/',
-    {},
-    async () => {
-      // TODO: make configuration based
-      // TODO: Implement pagination and search api
-
-      try {
-        const data = await promisify(readdir)(__dirname + '/../../data');
-        const extension = '.template';
-        return {
-          results: data.filter((val) => val.endsWith(extension)).map((val) => val.substring(0, val.length - extension.length))
-        };
-      } catch (err) {
-        console.dir(err);
-        throw err;
-      }
+    try {
+      const data = await promisify(readdir)(__dirname + '/../../data');
+      const extension = '.template.json';
+      return {
+        results: data
+          .filter((val) => val.endsWith(extension))
+          .map((val) => val.substring(0, val.length - extension.length)),
+      };
+    } catch (err) {
+      console.dir(err);
+      throw err;
     }
-  );
+  });
 
   server.get<{
-    Params: IGetTemplateByIdRequestUrl
-  }>(
-    '/:id',
-    {},
-    async (req) => {
-      const { id } = req.params;
+    Params: IGetTemplateByIdRequestUrl;
+  }>('/:id', {}, async (req) => {
+    const { id } = req.params;
 
-      try {
-        const filePath = __dirname + '/../../data/' + id + '.template';
-        const data = await readFileContents(filePath);
-        return data;
-      } catch (err) {
-        console.dir(err);
-        throw { status: 404, message: 'Not Found' };
-      }
+    try {
+      const filePath = __dirname + '/../../data/' + id + '.template.json';
+      const data = await readFileContents(filePath);
+      return data;
+    } catch (err) {
+      console.dir(err);
+      throw { status: 404, message: 'Not Found' };
     }
-  )
+  });
 
   server.post<{
-    Body: CreateTemplateRequestBody
+    Body: CreateTemplateRequestBody;
   }>(
     '/',
     {
       schema: {
         body: CreateTemplateRequestBodySchema,
         response: {
-          200: CreateTemplateRequestBodySchema
-        }
-      }
+          200: CreateTemplateRequestBodySchema,
+        },
+      },
     },
     async (req, resp) => {
       const { name, content } = req.body;
       try {
-        const filePath = __dirname + '/../../data/' + name + '.template';
+        const filePath = __dirname + '/../../data/' + name + '.template.json';
         await writeFileContents(filePath, content, false);
-        return { name, content };
+        await resp.send({ name, content });
       } catch (err) {
         console.dir(err);
         throw { status: 500, message: 'Something went wrong!' };
       }
-    }
-  )
+    },
+  );
 
   server.put<{
-    Body: PutTemplateRequestBody
-    Params: IPutTemplateRequestUrl
+    Body: PutTemplateRequestBody;
+    Params: IPutTemplateRequestUrl;
   }>(
     '/:id',
     {
       schema: {
         body: PutTemplateRequestBodySchema,
         response: {
-          200: CreateTemplateRequestBodySchema
-        }
-      }
+          200: CreateTemplateRequestBodySchema,
+        },
+      },
     },
     async (req, resp) => {
       const { id } = req.params;
       const { content } = req.body;
       try {
-        const filePath = __dirname + '/../../data/' + id + '.template';
+        const filePath = __dirname + '/../../data/' + id + '.template.json';
         await writeFileContents(filePath, content, true);
-        return { name: id, content };
+        await resp.send({ name: id, content });
       } catch (err) {
         console.dir(err);
         throw { status: 500, message: 'Something went wrong!' };
       }
-    }
-  )
+    },
+  );
 
   server.delete<{
-    Params: IDeleteTemplateRequestUrl
-  }>(
-    '/:id',
-    {},
-    async (req, resp) => {
-      const { id } = req.params;
-      try {
-        const filePath = __dirname + '/../../data/' + id + '.template';
-        await removeFile(filePath);
-        resp.code(204);
-        return;
-      } catch (err) {
-        console.dir(err);
-        throw { status: 500, message: 'Something went wrong!' };
-      }
+    Params: IDeleteTemplateRequestUrl;
+  }>('/:id', {}, async (req, resp) => {
+    const { id } = req.params;
+    try {
+      const filePath = __dirname + '/../../data/' + id + '.template.json';
+      await removeFile(filePath);
+      await resp.code(204).send();
+    } catch (err) {
+      console.dir(err);
+      throw { status: 500, message: 'Something went wrong!' };
     }
-  )
+  });
 
   done();
-};
+}

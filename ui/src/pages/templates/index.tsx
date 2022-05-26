@@ -1,19 +1,26 @@
-import type { NextPage } from 'next'
-import Head from 'next/head'
+import type { NextPage } from 'next';
+import Head from 'next/head';
 
-import { Grid } from "@mui/material";
-import { useEffect, useState } from "react";
-import { createTemplate, getTemplateById, removeTemplateById, searchTemplates, updateTemplate } from "../../repos/templates";
+import { Grid } from '@mui/material';
+import { useEffect, useState } from 'react';
+import {
+  createTemplate,
+  getTemplateById,
+  removeTemplateById,
+  searchTemplates,
+  updateTemplate,
+} from '../../repos/templates';
 
-import ViewInstance from "../../components/ViewInstance";
 import CreateTemplate from 'components/CreateTemplate';
 import ViewTemplate from 'components/ViewTemplate';
 import EditTemplate from 'components/EditTemplate';
 import ListTemplates from 'components/ListTemplates';
+import { convertTemplateToJSON } from 'utils/converters';
+import { V1TemplateFile } from 'types/v1DataFormat';
 
 interface ITemplateData {
-  key: string,
-  data: string
+  key: string;
+  data: V1TemplateFile;
 }
 
 const TemplatesPage: NextPage = () => {
@@ -23,72 +30,92 @@ const TemplatesPage: NextPage = () => {
   const [templates, setTemplates] = useState<Array<string>>();
 
   const loadData = async () => {
-    const data = await searchTemplates('');
+    const data = await searchTemplates();
     setTemplates(data);
-  }
+  };
 
   useEffect(() => {
     if (!templates) {
-      loadData();
+      void loadData();
     }
   }, [templates]);
 
   const toggleCreatePane = () => {
     setViewTemplateData(undefined);
     setShowCreatePanel(!showCreatePanel);
-  }
+  };
 
   const create = async (templateId: string, data: string) => {
+    const jsonBody = convertTemplateToJSON(data);
     setShowCreatePanel(false);
-    await createTemplate(templateId, data);
+    await createTemplate(templateId, jsonBody);
     await loadData();
   };
 
   const itemDeleted = async (key: string) => {
     await removeTemplateById(key);
     await loadData();
-  }
+  };
 
   const viewItem = async (key: string) => {
     const data = await getTemplateById(key);
     setShowCreatePanel(false);
     setEditTemplateData(undefined);
-    setViewTemplateData({key, data});
-  }
+    setViewTemplateData({ key, data });
+  };
 
   const editItem = async (key: string) => {
     const data = await getTemplateById(key);
     setShowCreatePanel(false);
     setViewTemplateData(undefined);
     setEditTemplateData(undefined);
-    setEditTemplateData({key, data});
-  }
+    setEditTemplateData({ key, data });
+  };
 
   const viewItemClosed = () => {
     setViewTemplateData(undefined);
-  }
+  };
 
   const editItemClosed = () => {
     setEditTemplateData(undefined);
-  }
+  };
 
   const onTemplateUpdated = async (templateId: string, body: string) => {
-    await updateTemplate(templateId, body);
+    const jsonBody = convertTemplateToJSON(body);
+    await updateTemplate(templateId, jsonBody);
+    setEditTemplateData(undefined);
   };
 
   let sidePanel: JSX.Element | undefined;
 
   sidePanel = showCreatePanel ? (
-    <CreateTemplate onCreateButtonClick={(templateId, data) => create(templateId, data)} />
+    <CreateTemplate
+      onCreateButtonClick={(templateId, data) => create(templateId, data)}
+    />
   ) : undefined;
 
-  sidePanel = !sidePanel && viewTemplateData ? (
-    <ViewTemplate templateId={viewTemplateData.key} data={viewTemplateData.data} onCloseClicked={viewItemClosed} />
-  ) : sidePanel;
+  sidePanel =
+    !sidePanel && viewTemplateData ? (
+      <ViewTemplate
+        templateId={viewTemplateData.key}
+        data={viewTemplateData.data}
+        onCloseClicked={viewItemClosed}
+      />
+    ) : (
+      sidePanel
+    );
 
-  sidePanel = !sidePanel && editTemplateData ? (
-    <EditTemplate templateId={editTemplateData.key} body={editTemplateData.data} onCloseClicked={editItemClosed} onUpdateButtonClick={onTemplateUpdated}/>
-  ) : sidePanel;
+  sidePanel =
+    !sidePanel && editTemplateData ? (
+      <EditTemplate
+        templateId={editTemplateData.key}
+        body={editTemplateData.data}
+        onCloseClicked={editItemClosed}
+        onUpdateButtonClick={onTemplateUpdated}
+      />
+    ) : (
+      sidePanel
+    );
 
   function computeLeftPanelWidth() {
     let mdWidth = 12;
@@ -98,7 +125,7 @@ const TemplatesPage: NextPage = () => {
       mdWidth = 6;
       lgWidth = 6;
     }
-    return [12, mdWidth, lgWidth]
+    return [12, mdWidth, lgWidth];
   }
 
   const [xsWidth, mdWidth, lgWidth] = computeLeftPanelWidth();
@@ -114,17 +141,31 @@ const TemplatesPage: NextPage = () => {
       <Grid item xs={xsWidth} md={mdWidth} lg={lgWidth}>
         <ListTemplates
           showCreateButton={true}
-          data={!templates ? [] : templates.map((item) => ({ itemKey: item, displayName: item.replace(/_/g, ' ') }))}
-          onItemDeletedClick={(key) => itemDeleted(key)}
-          onItemViewClick={(key) => viewItem(key)}
-          onItemEditClick={(key) => editItem(key)}
-          onCreateButtonClick={() => toggleCreatePane()} />
+          data={
+            !templates
+              ? []
+              : templates.map((item) => ({
+                  itemKey: item,
+                  displayName: item.replace(/_/g, ' '),
+                }))
+          }
+          onItemDeletedClick={(key) => {
+            void itemDeleted(key);
+          }}
+          onItemViewClick={(key) => {
+            void viewItem(key);
+          }}
+          onItemEditClick={(key) => {
+            void editItem(key);
+          }}
+          onCreateButtonClick={() => toggleCreatePane()}
+        />
       </Grid>
       <Grid item xs={12} md={6} lg={6} display={sidePanel ? undefined : 'none'}>
         {sidePanel}
       </Grid>
     </>
-  )
-}
+  );
+};
 
-export default TemplatesPage
+export default TemplatesPage;

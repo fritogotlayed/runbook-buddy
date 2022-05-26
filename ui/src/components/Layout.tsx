@@ -23,7 +23,7 @@ import { NavListItems } from './NavListItems';
 
 // Shamelessly based off of https://mui.com/getting-started/templates/dashboard/
 
-const drawerWidth: number = 240;
+const drawerWidth = 240;
 
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
@@ -47,35 +47,35 @@ const AppBar = styled(MuiAppBar, {
   }),
 }));
 
-const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
-  ({ theme, open }) => ({
-    '& .MuiDrawer-paper': {
-      position: 'relative',
-      whiteSpace: 'nowrap',
-      width: drawerWidth,
+const Drawer = styled(MuiDrawer, {
+  shouldForwardProp: (prop) => prop !== 'open',
+})(({ theme, open }) => ({
+  '& .MuiDrawer-paper': {
+    position: 'relative',
+    whiteSpace: 'nowrap',
+    width: drawerWidth,
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    boxSizing: 'border-box',
+    ...(!open && {
+      overflowX: 'hidden',
       transition: theme.transitions.create('width', {
         easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.enteringScreen,
+        duration: theme.transitions.duration.leavingScreen,
       }),
-      boxSizing: 'border-box',
-      ...(!open && {
-        overflowX: 'hidden',
-        transition: theme.transitions.create('width', {
-          easing: theme.transitions.easing.sharp,
-          duration: theme.transitions.duration.leavingScreen,
-        }),
-        width: theme.spacing(7),
-        [theme.breakpoints.up('sm')]: {
-          width: theme.spacing(9),
-        },
-      }),
-    },
-  }),
-);
+      width: theme.spacing(7),
+      [theme.breakpoints.up('sm')]: {
+        width: theme.spacing(9),
+      },
+    }),
+  },
+}));
 
 const mdTheme = createTheme();
 
-export default function Layout({ children }: { children: any}) {
+export default function Layout({ children }: { children: JSX.Element }) {
   const [open, setOpen] = React.useState(false);
   const toggleDrawer = () => {
     setOpen(!open);
@@ -89,7 +89,13 @@ export default function Layout({ children }: { children: any}) {
         <AppBar position="absolute" open={open}>
           {/* Keep on screen even when collapsed */}
           <Toolbar sx={{ pr: '24px' }}>
-            <IconButton edge="start" color="inherit" aria-label="open drawer" onClick={toggleDrawer} sx={{ marginRight: '36px', ...(open && { display: 'none' }), }}>
+            <IconButton
+              edge="start"
+              color="inherit"
+              aria-label="open drawer"
+              onClick={toggleDrawer}
+              sx={{ marginRight: '36px', ...(open && { display: 'none' }) }}
+            >
               <MenuIcon />
             </IconButton>
             <Typography
@@ -98,7 +104,8 @@ export default function Layout({ children }: { children: any}) {
               color="inherit"
               noWrap
               sx={{ flexGrow: 1, cursor: 'pointer' }}
-              onClick={() => router.push('/')} >
+              onClick={() => void router.push('/')}
+            >
               Runbook Buddy
             </Typography>
           </Toolbar>
