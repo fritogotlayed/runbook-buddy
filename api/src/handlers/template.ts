@@ -6,31 +6,16 @@ import {
 import { IncomingMessage, Server, ServerResponse } from 'http';
 import { readdir } from 'fs';
 import { promisify } from 'util';
-import { Type, Static } from '@sinclair/typebox';
 import { readFileContents, removeFile, writeFileContents } from '../utils';
-
-interface IGetTemplateByIdRequestUrl {
-  id: string;
-}
-
-const CreateTemplateRequestBodySchema = Type.Object({
-  name: Type.String(),
-  content: Type.String(),
-});
-type CreateTemplateRequestBody = Static<typeof CreateTemplateRequestBodySchema>;
-
-interface IPutTemplateRequestUrl {
-  id: string;
-}
-
-const PutTemplateRequestBodySchema = Type.Object({
-  content: Type.String(),
-});
-type PutTemplateRequestBody = Static<typeof PutTemplateRequestBodySchema>;
-
-interface IDeleteTemplateRequestUrl {
-  id: string;
-}
+import {
+  CreateTemplateRequestBody,
+  CreateTemplateRequestBodySchema,
+  IDeleteTemplateRequestUrl,
+  IGetTemplateByIdRequestUrl,
+  IPutTemplateRequestUrl,
+  PutTemplateRequestBody,
+  PutTemplateRequestBodySchema,
+} from '../schemas';
 
 type DoneCallback = () => void;
 

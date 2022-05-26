@@ -1,19 +1,21 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
+import config from 'config';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { FetchOptions, RequestMethodError } from '../common';
+import { BackingApiConfig, FetchOptions, RequestMethodError } from '../common';
 
 function getFetchOptions(req: NextApiRequest): FetchOptions {
+  const backingApi = config.get<BackingApiConfig>('backingApi');
   switch (req.method) {
     case 'GET':
       return {
-        info: `http://localhost:8080/instance/${
+        info: `${backingApi.urlRoot}/instance/${
           req.query.instanceId as string
         }`,
         init: undefined,
       };
     case 'DELETE':
       return {
-        info: `http://localhost:8080/instance/${
+        info: `${backingApi.urlRoot}/instance/${
           req.query.instanceId as string
         }`,
         init: {
@@ -22,7 +24,7 @@ function getFetchOptions(req: NextApiRequest): FetchOptions {
       };
     case 'PUT':
       return {
-        info: `http://localhost:8080/instance/${
+        info: `${backingApi.urlRoot}/instance/${
           req.query.instanceId as string
         }`,
         init: {

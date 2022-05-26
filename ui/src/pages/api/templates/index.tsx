@@ -1,17 +1,19 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
+import config from 'config';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { FetchOptions, RequestMethodError } from '../common';
+import { BackingApiConfig, FetchOptions, RequestMethodError } from '../common';
 
 function getFetchOptions(req: NextApiRequest): FetchOptions {
+  const backingApi = config.get<BackingApiConfig>('backingApi');
   switch (req.method) {
     case 'GET':
       return {
-        info: 'http://localhost:8080/template',
+        info: `${backingApi.urlRoot}/template`,
         init: undefined,
       };
     case 'POST':
       return {
-        info: 'http://localhost:8080/template',
+        info: `${backingApi.urlRoot}/template`,
         init: {
           method: 'POST',
           body: JSON.stringify(req.body),

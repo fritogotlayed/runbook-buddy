@@ -46,8 +46,9 @@ const TemplatesPage: NextPage = () => {
   };
 
   const create = async (templateId: string, data: string) => {
+    const jsonBody = convertTemplateToJSON(data);
     setShowCreatePanel(false);
-    await createTemplate(templateId, data);
+    await createTemplate(templateId, jsonBody);
     await loadData();
   };
 

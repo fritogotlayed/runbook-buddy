@@ -6,57 +6,17 @@ import {
 import { IncomingMessage, Server, ServerResponse } from 'http';
 import { readdir } from 'fs';
 import { promisify } from 'util';
-import { Static, Type } from '@sinclair/typebox';
 import { readFileContents, removeFile, writeFileContents } from '../utils';
-import { InstanceItem } from '../schemas/InstanceItem';
-
-interface IGetInstanceByIdRequestUrl {
-  id: string;
-}
-
-// TODO: Fastify tosses errors presumably because this is recursive
-const InstanceTopLevel = Type.Object({
-  version: Type.Number(),
-  // contents: Type.Array(InstanceItemSchema),
-  contents: Type.Array(
-    Type.Object({
-      completed: Type.Boolean(),
-      data: Type.String(),
-      children: Type.Array(Type.Any()),
-    }),
-  ),
-});
-
-const CreateInstanceRequestBodySchema = Type.Object({
-  name: Type.String(),
-  content: InstanceTopLevel,
-});
-type CreateInstanceRequestBody = Static<typeof CreateInstanceRequestBodySchema>;
-
-interface IPutInstanceRequestUrl {
-  id: string;
-}
-
-const PutInstanceRequestBodySchema = Type.Object({
-  // content: Type.Array(Type.Object({
-  //   completed: Type.Boolean(),
-  //   data: Type.String(),
-  // })),
-  version: Type.Number(),
-  // contents: Type.Array(InstanceItemSchema),
-  contents: Type.Array(
-    Type.Object({
-      completed: Type.Boolean(),
-      data: Type.String(),
-      children: Type.Array(Type.Any()),
-    }),
-  ),
-});
-type PutInstanceRequestBody = Static<typeof PutInstanceRequestBodySchema>;
-
-interface IDeleteInstanceRequestUrl {
-  id: string;
-}
+import {
+  InstanceItem,
+  IGetInstanceByIdRequestUrlParams,
+  CreateInstanceRequestBody,
+  CreateInstanceRequestBodySchema,
+  PutInstanceRequestBody,
+  PutInstanceRequestBodySchema,
+  IPutInstanceRequestUrl,
+  IDeleteInstanceRequestUrl,
+} from '../schemas';
 
 type DoneCallback = () => void;
 
@@ -89,7 +49,7 @@ export default function registerRoutes(
   });
 
   server.get<{
-    Params: IGetInstanceByIdRequestUrl;
+    Params: IGetInstanceByIdRequestUrlParams;
   }>('/:id', {}, async (req, res) => {
     const { id } = req.params;
 

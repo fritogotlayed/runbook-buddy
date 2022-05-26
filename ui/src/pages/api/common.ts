@@ -16,3 +16,7 @@ export type FetchOptions = {
   info: RequestInfo;
   init: RequestInit | undefined;
 };
+
+export type BackingApiConfig = {
+  urlRoot: string;
+};
