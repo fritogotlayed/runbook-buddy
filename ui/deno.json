@@ -1,0 +1,49 @@
+{
+  "tasks": {
+    "dev:build": "deno run -A dev.ts build",
+    "dev:preview": "deno run -A main.ts",
+    "dev:start": "deno run -A --watch=static/,routes/ dev.ts",
+    "tool:checks": "deno fmt --check && deno lint && deno check **/*.ts && deno check **/*.tsx",
+    "tool:cli": "echo \"import '\\$fresh/src/dev/cli.ts'\" | deno run --unstable -A -",
+    "tool:fresh:update": "deno run -A -r https://fresh.deno.dev/update .",
+    "tool:generate:api-types": "deno run -A --node-modules-dir npm:openapi-typescript --export-type http://localhost:8000/doc -o ./generated/api.d.ts",
+    "tool:manifest": "deno task tool:cli manifest $(pwd)",
+    "tool:test": "deno test --allow-env --allow-net --allow-read",
+    "tool:test:coverage": "deno task tool:test --coverage --clean && deno coverage --detailed"
+  },
+  "lint": {
+    "rules": {
+      "tags": [
+        "fresh",
+        "recommended"
+      ]
+    }
+  },
+  "fmt": {
+    "singleQuote": true,
+    "semiColons": true
+  },
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact"
+  },
+  "exclude": [
+    "**/_fresh/*"
+  ],
+  "imports": {
+    "$fresh/": "https://deno.land/x/fresh@1.7.3/",
+    "@std/assert": "jsr:@std/assert@^1.0.8",
+    "@std/expect": "jsr:@std/expect@^1.0.8",
+    "@std/testing": "jsr:@std/testing@^1.0.5",
+    "@zaubrik/djwt": "jsr:@zaubrik/djwt@^3.0.2",
+    "preact": "https://esm.sh/preact@10.22.0",
+    "preact/": "https://esm.sh/preact@10.22.0/",
+    "@preact/signals": "https://esm.sh/*@preact/signals@1.2.2",
+    "@preact/signals-core": "https://esm.sh/*@preact/signals-core@1.5.1",
+    "tailwindcss": "npm:tailwindcss@3.4.1",
+    "tailwindcss/": "npm:/tailwindcss@3.4.1/",
+    "tailwindcss/plugin": "npm:/tailwindcss@3.4.1/plugin.js",
+    "$std/": "https://deno.land/std@0.216.0/"
+  },
+  "nodeModulesDir": "auto"
+}

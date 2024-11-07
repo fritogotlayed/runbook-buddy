@@ -1,0 +1,34 @@
+{
+  "tasks": {
+    "db:start": "docker compose up -d && deno run --allow-net npm:wait-on tcp:5432 && sleep 1 && deno task tool:drizzle migrate",
+    "db:stop": "docker compose down -v",
+    "dev:generate-keys": "deno run --allow-write ./dev-scripts/generate-keys.ts",
+    "dev:start": "deno run --watch --allow-read --allow-env --allow-net --env-file --inspect ./src/presentation/main.ts",
+    "dev:testbed": "deno run --watch -A ./src/testbed.ts",
+    "tool:checks": "deno check . && deno lint && deno fmt --check",
+    "tool:drizzle": "deno run -A --node-modules-dir npm:drizzle-kit",
+    "tool:test": "NODE_ENV=test deno test --allow-env --allow-net --allow-run --allow-read --fail-fast",
+    "tool:test:coverage": "NODE_ENV=test deno task tool:test --coverage --clean && deno coverage --detailed"
+  },
+  "imports": {
+    "@hono/swagger-ui": "npm:@hono/swagger-ui@^0.5.0",
+    "@hono/zod-openapi": "npm:@hono/zod-openapi@^0.18.3",
+    "@std/assert": "jsr:@std/assert@^1.0.8",
+    "@std/encoding": "jsr:@std/encoding@^1.0.5",
+    "@std/expect": "jsr:@std/expect@^1.0.8",
+    "@std/testing": "jsr:@std/testing@^1.0.5",
+    "@std/uuid": "jsr:@std/uuid@^1.0.4",
+    "@types/pg": "npm:@types/pg@8.11.10",
+    "@zaubrik/djwt": "jsr:@zaubrik/djwt@^3.0.2",
+    "drizzle-kit": "npm:drizzle-kit@0.28.1",
+    "drizzle-orm": "npm:drizzle-orm@0.36.4",
+    "hono": "npm:hono@4.6.9",
+    "pg": "npm:pg@8.13.1",
+    "wait-on": "npm:wait-on@8.0.1",
+    "zod": "npm:zod@^3.24.1"
+  },
+  "fmt": {
+    "singleQuote": true,
+    "semiColons": true
+  }
+}
